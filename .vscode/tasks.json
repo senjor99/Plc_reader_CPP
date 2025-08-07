@@ -1,0 +1,44 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build main",
+      "type": "shell",
+      "command": "C:/mingw64/bin/g++.exe",
+      "args": [
+        "-std=c++17",
+        "-fdiagnostics-color=always",
+        "-g",
+        "main.cpp",
+        "-o",
+        "main.exe",
+        "-I", "C:/Users/faiss/AppData/Local/Programs/Python/Python313/include",
+        "-I", "C:/Users/faiss/AppData/Local/Programs/Python/Python313/Lib/site-packages/pybind11/include",
+        "-L", "C:/Users/faiss/AppData/Local/Programs/Python/Python313/libs",
+        "-L", "C:/Users/faiss/Documents/PLC-Reader - Embedded",
+        "-I", "C:/Users/faiss/Documents/PLC-Reader - Embedded",
+        "-I", "C:/Users/faiss/Documents/PLC-Reader - Embedded/imgui",
+        "imgui/imgui.cpp",
+        "imgui/imgui_draw.cpp",
+        "imgui/imgui_widgets.cpp",
+        "imgui/imgui_tables.cpp",
+        "imgui/backends/imgui_impl_glfw.cpp",
+        "imgui/backends/imgui_impl_opengl3.cpp",
+        "-I", "C:/Users/faiss/Documents/PLC-Reader - Embedded/GLFW",
+        "-L", "C:/Users/faiss/Documents/PLC-Reader - Embedded/GLFW",
+        "-L", "C:/Users/faiss/Documents/PLC-Reader - Embedded/lib",
+        "-I", "C:/Users/faiss/Documents/PLC-Reader - Embedded/py_lib",
+        "-lsnap7",
+        "-lpython313",
+        "-lglfw3",
+        "-lopengl32",
+        "-lgdi32"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"]
+    }
+  ]
+}
