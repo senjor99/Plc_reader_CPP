@@ -5,10 +5,6 @@
 
 namespace py = pybind11;
 
-
-
-
-
 std::map<std::string, std::shared_ptr<DeviceInfo>> return_scan_for_ip() {
     py::scoped_interpreter guard{};
     
