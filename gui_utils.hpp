@@ -102,7 +102,6 @@ void FilterBar::draw(){
             }
             ImGui::EndCombo();
         }
-    
 
         ImGui::SameLine();
 
@@ -115,8 +114,6 @@ void FilterBar::draw(){
                 if (ImGui::InputText("Value", value_buffer, IM_ARRAYSIZE(value_buffer))) {
                     std::string _user_input = std::string(value_buffer);
                     Value user_input =translate::parse_type(_user_input);
-                    
-
                     if(filter_modes[4] == ty_filter_scope) 
                     {
                         f_el.udt_value = user_input;
@@ -141,9 +138,9 @@ void FilterBar::draw(){
             if(filter_modes[2] == ty_filter_scope)
             {   
                 ImGui::SetNextItemWidth(100);
-                static char buffer[128]; 
-                if (ImGui::InputText("Name", buffer, IM_ARRAYSIZE(buffer))) {
-
+                static char name_buffer[128]; 
+                if (ImGui::InputText("Name", name_buffer, IM_ARRAYSIZE(name_buffer))) {
+                    f_el.name = name_buffer;
                 }
             }
             else f_el.name = std::nullopt; 
@@ -156,7 +153,7 @@ void FilterBar::draw(){
                 std::string ty_fil_name;
                 if (ImGui::BeginCombo("UDT", ty_fil_name.c_str())) {
                     for (int i = 0; i < udt_keys.size(); ++i) {
-                        bool is_selected = (udt_keys[i] == udt_scope);
+                        bool is_selected = (udt_keys[i] == ty_fil_name);
                         if (ImGui::Selectable(udt_keys[i].c_str(), is_selected)) {
                             filter_scope= i;
                             ty_fil_name = udt_keys[i];

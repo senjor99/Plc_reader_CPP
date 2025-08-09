@@ -58,7 +58,7 @@ private:
     std::string ty_filter_scope = "--None--";
     int filter_scope;
     std::string udt_scope;
-    std::vector<std::string> filter_modes = {"--None--","Value","Name:Value","UDT","UDT:Value"};
+    std::vector<std::string> filter_modes = {"--None--","Value","Name","Value-Name","Value-UDT"};
     std::vector<std::string> udt_keys;
     Filter::filterElem f_el;
     MainGUIController* this_controller;

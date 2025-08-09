@@ -226,6 +226,7 @@ namespace Filter
                     ptr->set_vis(true);
                 }
                 else if constexpr(std::is_base_of_v<BASE_CONTAINER,E>){
+                    ptr->set_vis(true);
                     ResetAll(ptr);
                 }
             },ch);
