@@ -88,15 +88,7 @@ void BASE::set_offset(std::pair<int,int>& offset_in){
     
 };
 
-void BASE::set_vis(bool b_in)
-{
-    is_vis = b_in;
-    if(parent)
-        parent->set_vis(b_in);
-    else
-        if (dynamic_cast<std::shared_ptr<DB>*>(this) != nullptr)  
-            throw std::logic_error("No Parent on element "+name);
-};
+void BASE::set_vis(bool b_in) {is_vis = b_in;};
 
 void BASE::set_data(const std::vector<unsigned char>& buffer){
     data = translate::generic_get(buffer,offset,type);
@@ -157,22 +149,8 @@ void BASE_CONTAINER::set_data_to_child(const std::vector<unsigned char>& buffer)
     }
 };
 
-void BASE_CONTAINER::set_vis(bool b_in)
-{
-    if(b_in)
-    {
-        is_vis = b_in;
-        is_vis_set = true;
-    }
-    else if(!b_in &&!is_vis_set)
-        is_vis = b_in;
-    if(parent) parent->set_vis(b_in);
-    else
-        if (dynamic_cast<std::shared_ptr<DB>*>(this) != nullptr)  
-            throw std::logic_error("No Parent on element "+name);
+void BASE_CONTAINER::set_vis(bool b_in){ is_vis = b_in; };
 
-
-};
 namespace Filter
 {
     struct filterElem 
@@ -182,6 +160,76 @@ namespace Filter
         std::optional<Value> udt_value;
         std::optional<std::string> udt_name;
     };
+
+    template <class Pred>
+    static bool walk_set_vis(VariantElement el, Pred pred) {
+        return std::visit([&](auto& ptr) -> bool {
+            using T = std::decay_t<decltype(ptr)>;
+            using E = typename T::element_type;
+
+            if constexpr (std::is_base_of_v<BASE, E>) 
+            {
+                bool match = pred(*ptr);
+                ptr->set_vis(match);
+                return match;
+            } 
+            else if constexpr (std::is_base_of_v<BASE_CONTAINER, E>) 
+            {
+                bool any = false;
+                for (auto& ch : ptr->get_childs())
+                    any |= walk_set_vis(ch, pred);
+                ptr->set_vis(any);
+                return any;
+            } 
+            else
+            {
+
+                static_assert(!sizeof(E*), "Type exception in filter");
+            }
+        }, el);
+    }
+
+    static bool walk_udt_value(VariantElement el,
+                           const std::string& udt_name,
+                           const Value& val,
+                           bool in_udt = false) {
+        return std::visit([&](auto& ptr) -> bool {
+            using T = std::decay_t<decltype(ptr)>;
+            using E = typename T::element_type;
+
+            if constexpr (std::is_base_of_v<BASE, E>) 
+            {
+                bool match = in_udt && (ptr->get_data() == val);
+                ptr->set_vis(match);
+                return match;
+
+            } 
+            else if constexpr (std::is_base_of_v<BASE_CONTAINER, E>) {
+                bool here = in_udt || (ptr->get_name() == udt_name);
+                bool any  = false;
+                for (auto& ch : ptr->get_childs())
+                    any |= walk_udt_value(ch, udt_name, val, here);
+
+                    ptr->set_vis(here && any);
+                return here && any;
+            }
+        }, el);
+    }
+
+    inline void ResetAll(std::shared_ptr<BASE_CONTAINER> db) {
+        for (auto& ch : db->get_childs())
+            std::visit([&](auto& ptr) {
+                using T = std::decay_t<decltype(ptr)>;
+                using E = typename T::element_type;
+
+                if constexpr(std::is_base_of_v<BASE,E>){
+                    ptr->set_vis(true);
+                }
+                else if constexpr(std::is_base_of_v<BASE_CONTAINER,E>){
+                    ResetAll(ptr);
+                }
+            },ch);
+    }
 
     class BASE_FILTER
     {
@@ -196,38 +244,20 @@ namespace Filter
         Value value;
 
         FILTER_VALUE(Value in) : value(in) {}
-
-        void set_filter(std::shared_ptr<DB> el) override 
-        {
-            for(auto i : el->get_childs()) 
-            {
-                _set_filter(i,value);
-            }
-        }
-        static void _set_filter(VariantElement el,Value val_in)
-        {
-            std::visit([&](auto&& ptr) 
-            {
-                using T = std::decay_t<decltype(ptr)>;
-                
-                if constexpr (std::is_base_of_v<BASE, typename T::element_type>)
-                {
-                    /*
-                    if (std::holds_alternative<std::string>(ptr->get_data()))
-                        std::cout<<"string "<<ptr->get_name()<<"\n";
-                    if (std::holds_alternative<int>(ptr->get_data()))
-                        std::cout<<"int "<<ptr->get_name()<<"\n";
-                    */
-                    ptr->set_vis(ptr->get_data() == val_in);
-                }
-                else if constexpr (std::is_base_of_v<BASE_CONTAINER, typename T::element_type>)
-                {
-                    for(auto i : ptr->get_childs()) _set_filter(i,val_in);
-                }
-            },el);
+        
+        void set_filter(std::shared_ptr<DB> el) override {
+            for (auto& ch : el->get_childs())
+                walk_set_vis(ch, [&](BASE& b)
+                {   
+                    if(value == Value(""))
+                    {
+                        return true;
+                    }
+                    else return b.get_data() == value; 
+                });
         }
     };
-
+        
     class FILTER_NAME : public BASE_FILTER
     {
     public:
@@ -235,27 +265,9 @@ namespace Filter
         
         FILTER_NAME(std::string name_in) : name(name_in) {}
 
-        void set_filter(std::shared_ptr<DB> el) override 
-        {
-            for(auto i : el->get_childs()){
-                _set_filter(i,name);
-            }
-        }
-        static void _set_filter(VariantElement el,std::string in)
-        {
-            std::visit([&](auto&& ptr) 
-            {
-                using T = std::decay_t<decltype(ptr)>;
-                
-                if constexpr (  std::is_base_of_v<T, std::shared_ptr<BASE>>)
-                {
-                    ptr->set_vis(ptr->get_name() == in);
-                }
-                else if constexpr (  std::is_base_of_v<T, std::shared_ptr<BASE_CONTAINER>>)
-                {
-                   for(auto i : ptr->get_childs()) _set_filter(i,in);
-                }
-            },el);
+        void set_filter(std::shared_ptr<DB> el) override {
+            for (auto& ch : el->get_childs())
+                walk_set_vis(ch, [&](BASE& b){ return b.get_name() == name; });
         }
     };
 
@@ -266,27 +278,11 @@ namespace Filter
         std::string name;
         FILTER_VALUE_NAME(Value val_in, std::string n_in) 
             : value(val_in),name(n_in) {}
-
-        void set_filter(std::shared_ptr<DB> el) override 
-        {
-            for(auto i : el->get_childs()) { _set_filter(i,name,value);}
-        }
-        static void _set_filter(VariantElement el,std::string n_in,Value val_in)
-        {
-            std::visit([&](auto&& ptr) 
-            {
-                using T = std::decay_t<decltype(ptr)>;
-                
-                if constexpr (  std::is_base_of_v<T, std::shared_ptr<BASE>>)
-                {
-                    
-                    ptr->set_vis(ptr->get_name() == n_in && ptr->get_data() == val_in);
-                }
-                else if constexpr (  std::is_base_of_v<T, std::shared_ptr<BASE_CONTAINER>>)
-                {
-                    for(auto i : ptr->get_childs()) _set_filter(i,n_in,val_in);
-                }
-            },el);
+        void set_filter(std::shared_ptr<DB> el) override {
+            for (auto& ch : el->get_childs())
+                walk_set_vis(ch, [&](BASE& b){
+                    return b.get_name() == name && b.get_data() == value;
+        });
         }
     };
     
@@ -298,33 +294,10 @@ namespace Filter
         FILTER_VALUE_UDT(Value val_in, std::string n_in) 
             : value(val_in),udt_name(n_in) {}
 
-        void set_filter(std::shared_ptr<DB> el) override 
-        {
-            for(auto i : el->get_childs()) 
-            {
-                _set_filter(i,udt_name,value,false);
-            }
+        void set_filter(std::shared_ptr<DB> el) override {
+            for (auto& ch : el->get_childs())
+                walk_udt_value(ch, udt_name, value, false);
         }
-        static void _set_filter(VariantElement el,std::string n_in,Value val_in,bool x)
-        {
-            std::visit([&](auto&& ptr) 
-            {
-                using T = std::decay_t<decltype(ptr)>;
-                
-                if constexpr (  std::is_base_of_v<T, std::shared_ptr<BASE>>)
-                {
-                    
-                    ptr->set_vis(ptr->get_data() == val_in);
-                }
-                else if constexpr (  std::is_base_of_v<T, std::shared_ptr<BASE_CONTAINER>>)
-                {
-                    if(ptr->get_name() == n_in || x) 
-                        for(auto i : ptr->get_childs()) 
-                            _set_filter(i,n_in,val_in,true);
-                }
-            },el);
-        }
-
     };
      
     std::shared_ptr<BASE_FILTER> Do_Filter(filterElem* el)

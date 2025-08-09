@@ -116,7 +116,6 @@ template<>
 struct action<udt_header_quoted_name> {
     template<typename Input>
     static void apply(const Input& in, ParserState& st) {
-       //std::cout << " UDT name: " << in.string() <<",\n";
         st.element_in_scope.push_back(std::make_shared<UDT_RAW>(in.string()));
     }
 };       
@@ -135,7 +134,6 @@ template<>
 struct action<udt_raw_basic_type> {
     template<typename Input>
     static void apply(const Input& in, ParserState& st) {
-       //std::cout << " Element is type of: " << in.string() <<",\n";
         st.type = in.string();
         if(st.type.find("Struct") != std::string::npos) {
             std::shared_ptr<STRUCT_SINGLE> el = std::make_shared<STRUCT_SINGLE>(st.name);
@@ -157,7 +155,6 @@ template<>
 struct action<udt_raw_basic_array_start_arr> {
     template<typename Input>
     static void apply(const Input& in, ParserState& st) {
-        //std::cout << " Array start at " << in.string() <<",\n";
         st.array_start = std::stoi(in.string());
         st.is_arr = true;
     }
@@ -167,7 +164,6 @@ template<>
 struct action<udt_raw_basic_array_end_arr> {
     template<typename Input>
     static void apply(const Input& in, ParserState& st) {
-       //std::cout << " Array ends at " << in.string() <<",\n";
         st.array_end = std::stoi(in.string());
     }
 };
@@ -184,11 +180,9 @@ template<>
 struct action<udt_raw_basic_struct_end> {
     template<typename Input>
     static void apply(const Input& in, ParserState& st) {
-        //std::cout<< "inserting in scope, pointer: "<<st.element_in_scope.size();
         ScopeVariant el_to_insert = st.element_in_scope.back();
         if (st.element_in_scope.size() > 1) {
             ScopeVariant el = st.element_in_scope[st.element_in_scope.size() - 2];
-            //std::cout<<"test \n";
             std::visit([&](auto&& parent_ptr) {
                 std::visit([&](auto&& child_ptr) {
                     using ParentT = std::decay_t<decltype(parent_ptr)>;
@@ -197,7 +191,6 @@ struct action<udt_raw_basic_struct_end> {
                     if constexpr ((std::is_same_v<ParentT, std::shared_ptr<UDT_RAW>> ||
                         std::is_same_v<ParentT, std::shared_ptr<DB>>) &&
                         std::is_same_v<ChildT, std::shared_ptr<STRUCT_SINGLE>>) {
-                        //std::cout<<"inserendo struct "<<child_ptr->get_name()<< " in " << parent_ptr->get_name();
                             parent_ptr->insert_child(child_ptr);
                     }
                 }, el_to_insert);
@@ -218,7 +211,6 @@ template<>
 struct action<udt_header_end_declaration> {
     template<typename Input>
     static void apply(const Input& in, ParserState& st) {
-       //std::cout <<"endtype "<<in.string() <<"\n";
     }
 };
 
@@ -226,7 +218,6 @@ template<>
 struct action<db_header_declaration> {
     template<typename Input>
     static void apply(const Input& in, ParserState& st) {
-       //std::cout <<"db title "<<in.string() <<",\n";
         st.db = std::make_shared<DB>(st.DB_name);
         st.element_in_scope.push_back(st.db);
     }
@@ -236,7 +227,6 @@ template<>
 struct action<db_header_name> {
     template<typename Input>
     static void apply(const Input& in, ParserState& st) {
-       //std::cout <<"db header "<<in.string() <<",\n";
     }
 };
 
@@ -245,7 +235,6 @@ struct action<db_body_name> {
     template<typename Input>
     static void apply(const Input& in, ParserState& st) {
         if(in.string() != "END_STRUCT")
-       //std::cout <<" DB Element Name: "<<in.string() <<",\n";
         st.name = in.string();
     }
 };
@@ -254,7 +243,6 @@ template<>
 struct action<db_body_array_start> {
     template<typename Input>
     static void apply(const Input& in, ParserState& st) {
-       //std::cout <<" DB Element Arr Start:  "<<in.string() <<",\n";
         st.is_arr = true;
         st.array_start = std::stoi(in.string());
     }
@@ -264,7 +252,6 @@ template<>
 struct action<db_body_array_end> {
     template<typename Input>
     static void apply(const Input& in, ParserState& st) {
-       //std::cout <<" DB Element Arr End:  "<<in.string() <<",\n";
         st.array_end = std::stoi(in.string());
     }
 };
@@ -273,7 +260,6 @@ template<>
 struct action<db_body_type> {
     template<typename Input>
     static void apply(const Input& in, ParserState& st) {
-       //std::cout <<" DB Element Type:  "<<in.string() <<",\n";
         st.type = in.string();
         if(st.type.find("Struct") != std::string::npos) {
             st.element_in_scope.push_back(std::make_shared<STRUCT_SINGLE>(st.name));
@@ -286,7 +272,6 @@ template<>
 struct action<db_from_udt> {
     template<typename Input>
     static void apply(const Input& in, ParserState& st) {
-        //std::cout <<" DB Element Type:  "<<in.string() <<",\n";
         st.name = in.string();
         st.type = in.string();
         if(auto it = st.udt_database.find(st.type);it != st.udt_database.end())

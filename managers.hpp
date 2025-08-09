@@ -23,7 +23,6 @@ class NetManager {
             for(auto i : devices){
                 devices_keys.push_back(i.first);
             }
-            std::cout<<"device list created\n";
         }
 
         std::vector<std::string> get_devices_keys()const{return devices_keys;}
@@ -46,17 +45,15 @@ class NetManager {
 
         void plc_data_retrieve(int db_nr,int size,std::vector<unsigned char>* buffer) {
             buffer->resize(size);
-            std::cout<<"NetMan retrieve, size:"<<size<<"con buffer di size:"<<buffer->size()<<"\n";
             if (!buffer) {
                 std::cerr << "ERRORE: buffer è null!\n";
             }
             if (Client.ConnectTo(device_scope->ip.c_str(), 0, 1) == 0){
                 int res= Client.DBRead(db_nr,0,size,buffer->data());
-                std::cout<<"Netman disconnect";
                 Client.Disconnect();
             }
             else{ 
-                std::cout<<"Error connecting to client";
+                std::cerr<<"Error connecting to client\n";
                 return ;}
         }
 
@@ -90,7 +87,6 @@ class DatabaseManager {
             for(auto i : db_map){
                 db_keys.push_back(i.first);
             }
-            std::cout<<"dbs list created\n";
         }
         void create_db() {
             if(db_scope.name == "--None--") {database = nullptr;}
@@ -122,7 +118,6 @@ class DatabaseManager {
         void set_db_nr(int* nr_in){db_scope.default_number = *nr_in;}
 
         bool set_db_scope(std::string key){
-            std::cout<<"scope_change";
             if(auto it= db_map.find(key); it != db_map.end()){
                 db_scope = it->second;
                 return true;
@@ -152,7 +147,15 @@ class FilterManager{
             {
                 filter_ptr->set_filter(db_ptr);
             }
+            else
+            {
+                reset_mode();
+            }
          
+        }
+        void reset_mode()
+        {   
+            Filter::ResetAll(db_ptr);
         }
       
 };
@@ -175,7 +178,6 @@ class CommManager {
         DbInfo get_database_scope(){return DataMan.get_db_scope();}
         std::vector<std::string> get_udt_keys(){return DataMan.get_udt_keys();}
         void get_plc_data(){
-            std::cout<<"CommMan get_data\n";
             NetMan.plc_data_retrieve(DataMan.get_db_default_number(),DataMan.get_db_size()+1,&buffer);
             DataMan.set_db_data(buffer);
         }
@@ -183,6 +185,7 @@ class CommManager {
         void set_plc_data(){NetMan.plc_data_retrieve(DataMan.get_db_default_number(),DataMan.get_db_size(),&buffer);}
         void set_device_scope(std::string& el_name_in){NetMan.set_device_scope(el_name_in);}
         void set_filter_mode(Filter::filterElem f_el){FilMan.set_mode(f_el);}
+        void reset_filter_mode(){FilMan.reset_mode();}
         void set_database_scope(std::string& el_name_in)
         {
             DataMan.set_db_scope(el_name_in);

@@ -182,7 +182,6 @@ void Body::draw_node(const VariantElement& element,int& depth_in){
         if constexpr (std::is_base_of_v<BASE_CONTAINER, T>) {
             if(ptr->get_vis())
                 if (ImGui::TreeNodeEx(label.c_str(), ImGuiTreeNodeFlags_Framed|ImGuiTreeNodeFlags_OpenOnDoubleClick|ImGuiTreeNodeFlags_OpenOnArrow)) {
-                    ImGui::Text("%s : %s",("Parent: "),ptr->get_parent()->get_name().c_str());
                     ++depth_in;
                     for (const auto& child : ptr->get_childs()) {
                         if(ptr->get_vis())
@@ -290,6 +289,10 @@ void MainGUIController::activate_filter(bool& b_in)
         if(b_in)
         {  
             CommMan->set_filter_mode(_FilterBar->get_filter_status());
+        }
+        else
+        {
+            CommMan->reset_filter_mode();
         }
     }
 
