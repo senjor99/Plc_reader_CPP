@@ -19,7 +19,7 @@ public:
 
     void draw();
     void pick_db(std::string k_in);
-    void activate_filter(bool& in);
+    void activate_filter(bool any_selected);
 
     std::unique_ptr<ConnectionBar> upper_bar ;
     std::unique_ptr<Body> body ;
@@ -48,21 +48,36 @@ public:
 
 class FilterBar {
 public:
-    void set_udt_keys(std::vector<std::string> k_in){ udt_keys = k_in ;}
+    enum class Mode { None, Value, Name, ValueName, UdtValue };
+
+    void set_udt_keys(std::vector<std::string> k_in){ udt_keys = std::move(k_in); }
     void draw();
-    void activate(){active = !active;}
-    FilterBar(MainGUIController* controller): this_controller(controller){}
-    Filter::filterElem get_filter_status(){return f_el;}
+    void activate(){ active = !active; }
+    FilterBar(MainGUIController* controller): this_controller(controller) {}
+    Filter::filterElem get_filter_status() const { return f_el; }
+
 private:
     bool active = false;
-    std::string ty_filter_scope = "--None--";
-    int filter_scope;
-    std::string udt_scope;
-    std::vector<std::string> filter_modes = {"--None--","Value","Name","Value-Name","Value-UDT"};
+    Mode mode = Mode::None;
+
+    std::array<char,128> value_buf{};  
+    std::array<char,128> name_buf{};   
     std::vector<std::string> udt_keys;
+
     Filter::filterElem f_el;
     MainGUIController* this_controller;
 
+    // helper
+    static const char* mode_label(Mode m) {
+        switch(m){
+            case Mode::None:      return "--None--";
+            case Mode::Value:     return "Value";
+            case Mode::Name:      return "Name";
+            case Mode::ValueName: return "Value-Name";
+            case Mode::UdtValue:  return "Deprecated";
+        }
+        return "";
+    }
 };
 
 class Body {

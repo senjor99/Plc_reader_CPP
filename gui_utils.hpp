@@ -77,99 +77,90 @@ void ConnectionBar::draw() {
     }
 
 };
-void FilterBar::draw(){
-    std::string filter_btn_name;
-    if(!active)
-        filter_btn_name="Filter";
-    if(active)
-        filter_btn_name="Unfilter";
-
-    {if(ImGui::Button(filter_btn_name.c_str())) {activate();}}
-    
+void FilterBar::draw()
+{
+    const char* btn = active ? "Unfilter" : "Filter";
+    if (ImGui::Button(btn)) activate();
     ImGui::SameLine();
-    if(active){
-        ImGui::SetNextItemWidth(100);
 
-        if (ImGui::BeginCombo("Filter by", ty_filter_scope.c_str())) {
-            for (int i = 0; i < filter_modes.size(); ++i) {
-                bool is_selected = (filter_modes[i] == ty_filter_scope);
-                if (ImGui::Selectable(filter_modes[i].c_str(), is_selected)) {
-                    ty_filter_scope = filter_modes[i];
-                    ImGui::SetItemDefaultFocus();                   
-                }
-            
-
-            }
-            ImGui::EndCombo();
-        }
-
-        ImGui::SameLine();
-
-        if(ty_filter_scope != filter_modes[0])
-        {
-            if(filter_modes[1] == ty_filter_scope || filter_modes[2] == ty_filter_scope|| filter_modes[4] == ty_filter_scope)
-            {  
-                ImGui::SetNextItemWidth(100);
-                static char value_buffer[128] = {0};  
-                if (ImGui::InputText("Value", value_buffer, IM_ARRAYSIZE(value_buffer))) {
-                    std::string _user_input = std::string(value_buffer);
-                    Value user_input =translate::parse_type(_user_input);
-                    if(filter_modes[4] == ty_filter_scope) 
-                    {
-                        f_el.udt_value = user_input;
-                        f_el.value_in = std::nullopt;   
-                    }
-                    else
-                    {
-                        f_el.value_in = user_input;
-                        f_el.udt_value= std::nullopt;   
-                    }
-                    
-                }
-            }
-            else
-            { 
-                f_el.udt_value = std::nullopt; 
-                f_el.value_in = std::nullopt; 
-            }
-            
-            ImGui::SameLine();
-            
-            if(filter_modes[2] == ty_filter_scope)
-            {   
-                ImGui::SetNextItemWidth(100);
-                static char name_buffer[128]; 
-                if (ImGui::InputText("Name", name_buffer, IM_ARRAYSIZE(name_buffer))) {
-                    f_el.name = name_buffer;
-                }
-            }
-            else f_el.name = std::nullopt; 
-            
-            ImGui::SameLine();
-            
-            if(filter_modes[3] == ty_filter_scope || filter_modes[4] == ty_filter_scope)
-            {
-                ImGui::SetNextItemWidth(100);
-                std::string ty_fil_name;
-                if (ImGui::BeginCombo("UDT", ty_fil_name.c_str())) {
-                    for (int i = 0; i < udt_keys.size(); ++i) {
-                        bool is_selected = (udt_keys[i] == ty_fil_name);
-                        if (ImGui::Selectable(udt_keys[i].c_str(), is_selected)) {
-                            filter_scope= i;
-                            ty_fil_name = udt_keys[i];
-                            ImGui::SetItemDefaultFocus();    
-                        }   
-                    }
-                    ImGui::EndCombo();
-                }
-            }
-            else f_el.udt_name = std::nullopt; 
-        }
+    if (!active) {
+        // disattivo tutto
+        f_el.value_in.reset();
+        f_el.name.reset();
+        f_el.udt_value.reset();
+        f_el.udt_name.reset();
+        this_controller->activate_filter(false);
+        return;
     }
-    this_controller->activate_filter(active);
 
+    // --- combo modalità ---
+    ImGui::SetNextItemWidth(120);
+    if (ImGui::BeginCombo("Filter by", mode_label(mode))) {
+        auto pick = [&](Mode m){
+            bool sel = (mode == m);
+            if (ImGui::Selectable(mode_label(m), sel)) mode = m;
+            if (sel) ImGui::SetItemDefaultFocus();
+        };
+        pick(Mode::None);
+        pick(Mode::Value);
+        pick(Mode::Name);
+        pick(Mode::ValueName);
+        pick(Mode::UdtValue);
+        ImGui::EndCombo();
+    }
 
-};
+    ImGui::SameLine();
+
+    bool needValue = (mode == Mode::Value || mode == Mode::ValueName || mode == Mode::UdtValue);
+    bool needName  = (mode == Mode::Name  || mode == Mode::ValueName);
+    bool needUdt   = (mode == Mode::UdtValue);
+
+    // VALUE
+    if (needValue) {
+        ImGui::SetNextItemWidth(140);
+        if (ImGui::InputText("Value", value_buf.data(), (int)value_buf.size())) {
+            std::string s = value_buf.data();
+            Value v = translate::parse_type(s);  // tua funzione
+            if (mode == Mode::UdtValue) {
+                f_el.udt_value = v;
+                f_el.value_in.reset();
+            } else {
+                f_el.value_in  = v;
+                f_el.udt_value.reset();
+            }
+        }
+    } else {
+        f_el.value_in.reset();
+        f_el.udt_value.reset();
+    }
+
+    ImGui::SameLine();
+
+    // NAME
+    if (needName) {
+        ImGui::SetNextItemWidth(140);
+        if (ImGui::InputText("Name", name_buf.data(), (int)name_buf.size())) {
+            if (name_buf[0] != '\0') f_el.name = std::string(name_buf.data());
+            else f_el.name.reset();
+        }
+    } else {
+        f_el.name.reset();
+    }
+
+    ImGui::SameLine();
+    f_el.udt_name.reset();
+
+    // --- attiva/disattiva il filtro a controller ---
+    bool any_active = false;
+    switch (mode) {
+        case Mode::None:      any_active = false; break;
+        case Mode::Value:     any_active = f_el.value_in.has_value(); break;
+        case Mode::Name:      any_active = f_el.name.has_value(); break;
+        case Mode::ValueName: any_active = f_el.value_in.has_value() || f_el.name.has_value(); break;
+        case Mode::UdtValue:  any_active = f_el.udt_value.has_value() && f_el.udt_name.has_value(); break;
+    }
+    this_controller->activate_filter(any_active);
+}
 
 void Body::draw_node(const VariantElement& element,int& depth_in){
 
@@ -281,13 +272,13 @@ void MainGUIController::pick_db(std::string k_in)
         _FilterBar->set_udt_keys(CommMan->get_udt_keys());
     };
 
-void MainGUIController::activate_filter(bool& b_in)
+void MainGUIController::activate_filter(bool any_selected)
     {
-        if(b_in)
+        if(any_selected)
         {  
             CommMan->set_filter_mode(_FilterBar->get_filter_status());
         }
-        else
+        else 
         {
             CommMan->reset_filter_mode();
         }

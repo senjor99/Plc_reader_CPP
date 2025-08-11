@@ -171,19 +171,21 @@ namespace Filter
             {
                 bool match = pred(*ptr);
                 ptr->set_vis(match);
+                
                 return match;
             } 
             else if constexpr (std::is_base_of_v<BASE_CONTAINER, E>) 
             {
                 bool any = false;
+
                 for (auto& ch : ptr->get_childs())
                     any |= walk_set_vis(ch, pred);
                 ptr->set_vis(any);
+
                 return any;
             } 
             else
             {
-
                 static_assert(!sizeof(E*), "Type exception in filter");
             }
         }, el);
@@ -249,12 +251,9 @@ namespace Filter
         void set_filter(std::shared_ptr<DB> el) override {
             for (auto& ch : el->get_childs())
                 walk_set_vis(ch, [&](BASE& b)
-                {   
-                    if(value == Value(""))
-                    {
-                        return true;
-                    }
-                    else return b.get_data() == value; 
+                {
+                    if(b.get_data() == Value("")) return true;
+                    else return b.get_data() == value;
                 });
         }
     };
@@ -268,7 +267,10 @@ namespace Filter
 
         void set_filter(std::shared_ptr<DB> el) override {
             for (auto& ch : el->get_childs())
-                walk_set_vis(ch, [&](BASE& b){ return b.get_name() == name; });
+                walk_set_vis(ch, [&](BASE& b){ 
+                    if(b.get_data() == Value("")) return true;
+                    else return b.get_name() == name; 
+                });
         }
     };
 
@@ -282,6 +284,7 @@ namespace Filter
         void set_filter(std::shared_ptr<DB> el) override {
             for (auto& ch : el->get_childs())
                 walk_set_vis(ch, [&](BASE& b){
+                    if(b.get_name() == "" && b.get_data() == Value("")) return true;
                     return b.get_name() == name && b.get_data() == value;
         });
         }
@@ -312,13 +315,17 @@ namespace Filter
         else if(el->value_in.has_value() && el->name.has_value() && !el->udt_name.has_value() && !el->udt_value.has_value()){
             return std::make_shared<FILTER_VALUE_NAME>(el->value_in.value(),el->name.value());
         }
-        else if(!el->value_in.has_value() && !el->name.has_value() && el->udt_name.has_value() && el->udt_value.has_value()){
-            return std::make_shared<FILTER_VALUE_UDT>(el->udt_value.value(),el->udt_name.value());
+        else if((!el->value_in.has_value() && !el->name.has_value()) && el->udt_name.has_value() || el->udt_value.has_value()){
+            std::string udt_name = el->udt_name.has_value() ? el->udt_name.value() : "";
+            Value udt_value = el->udt_value.has_value() ? el->udt_value.value() : "";
+
+            return std::make_shared<FILTER_VALUE_UDT>(udt_value,udt_name);
         }
         else if(!el->value_in.has_value() && !el->name.has_value() && !el->udt_name.has_value() && !el->udt_value.has_value()){
             return nullptr;
         }
         else{
+            std::cout<<"value: "<<el->value_in.has_value()<<"name: "<<el->name.has_value()<<"udt_name: "<<el->udt_name.has_value()<<"udt_value: "<<el->udt_value.has_value()<<"\n"; 
             throw std::logic_error("Invalid combination of arguments in Do_Filter");
         }
     };
