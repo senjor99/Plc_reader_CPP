@@ -76,6 +76,9 @@
         "netfwd": "cpp",
         "socket": "cpp",
         "timer": "cpp",
-        "future": "cpp"
-    }
+        "future": "cpp",
+        "chrono": "cpp",
+        "filesystem": "cpp"
+    },
+    "cmake.sourceDirectory": "C:/Users/faiss/Documents/plc_reader_cpp"
 }

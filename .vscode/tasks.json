@@ -9,36 +9,56 @@
         "-std=c++17",
         "-fdiagnostics-color=always",
         "-g",
+
+        // --- I TUOI SORGENTI ---
         "main.cpp",
-        "-o",
-        "main.exe",
-        "-I", "C:/Users/faiss/AppData/Local/Programs/Python/Python313/include",
-        "-I", "C:/Users/faiss/AppData/Local/Programs/Python/Python313/Lib/site-packages/pybind11/include",
-        "-L", "C:/Users/faiss/AppData/Local/Programs/Python/Python313/libs",
-        "-L", "C:/Users/faiss/Documents/PLC-Reader - Embedded",
-        "-I", "C:/Users/faiss/Documents/PLC-Reader - Embedded",
-        "-I", "C:/Users/faiss/Documents/PLC-Reader - Embedded/imgui",
-        "-I", "C:/Users/faiss/Documents/PLC-Reader - Embedded/opc_ua",
         "imgui/imgui.cpp",
         "imgui/imgui_draw.cpp",
         "imgui/imgui_widgets.cpp",
         "imgui/imgui_tables.cpp",
         "imgui/backends/imgui_impl_glfw.cpp",
         "imgui/backends/imgui_impl_opengl3.cpp",
+
+        // (AGGIUNGI QUI il tuo file discovery, es. "dcp_discovery.cpp")
+        "dcp_discovery.cpp",
+
+        // --- INCLUDE TUOI ESISTENTI ---
+        "-I", "C:/Users/faiss/AppData/Local/Programs/Python/Python313/include",
+        "-I", "C:/Users/faiss/AppData/Local/Programs/Python/Python313/Lib/site-packages/pybind11/include",
+        "-I", "C:/Users/faiss/Documents/PLC-Reader - Embedded",
+        "-I", "C:/Users/faiss/Documents/PLC-Reader - Embedded/imgui",
+        "-I", "C:/Users/faiss/Documents/PLC-Reader - Embedded/opc_ua",
+        "-I", "C:/Users/faiss/Documents/PLC-Reader - Embedded/PcapPlusPlus",
         "-I", "C:/Users/faiss/Documents/PLC-Reader - Embedded/GLFW",
-        "-L", "C:/Users/faiss/Documents/PLC-Reader - Embedded/GLFW",
-        "-L", "C:/Users/faiss/Documents/PLC-Reader - Embedded/lib",
         "-I", "C:/Users/faiss/Documents/PLC-Reader - Embedded/py_lib",
+
+        // --- NPCAP: INCLUDE & LIB ---
+        "-I", "C:/Program Files/Npcap/SDK/Include",
+        "-L", "C:/Program Files/Npcap/SDK/Lib/x64",
+
+        // --- LIBRERIE TUe ---
+        "-L", "C:/Users/faiss/Documents/PLC-Reader - Embedded",
+        "-L", "C:/Users/faiss/Documents/PLC-Reader - Embedded/external",
+        "-L", "C:/Users/faiss/Documents/PLC-Reader - Embedded/include",
+        "-L", "C:/Users/faiss/Documents/PLC-Reader - Embedded/src",
+
+        // --- LINK ORDER: prima gli obj, poi le lib ---
+        "-o", "bin/main.exe",
+
+        // --- NPCAP: LINK ---
+        "-lwpcap",
+        "-lPacket",
+        "-lws2_32",
+        "-liphlpapi",
+
+        // --- ALTRE LIB ---
         "-lsnap7",
         "-lpython313",
         "-lglfw3",
         "-lopengl32",
         "-lgdi32"
       ],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
+      "group": { "kind": "build", "isDefault": true },
       "problemMatcher": ["$gcc"]
     }
   ]
