@@ -1,6 +1,6 @@
-#pragma once
-
 #include <gui.hpp>
+#include <managers.hpp>
+#include <classes.hpp>
 
 // class MainGuiController
 /*
@@ -91,8 +91,8 @@ void ConnectionBar::set_db_combo_name(std::string in){db_combo_name = in;}
 
 void ConnectionBar::draw() {
     std::vector<std::string> device_keys =this_controller->CommMan->get_devices_keys();
-    std::shared_ptr<DeviceInfo> device_scope = this_controller->CommMan->get_device_scope();
-    std::map<std::string,std::shared_ptr<DeviceInfo>> device_map = this_controller->CommMan->get_devices_map();
+    std::shared_ptr<DeviceProfInfo> device_scope = this_controller->CommMan->get_device_scope();
+    std::map<std::string,std::shared_ptr<DeviceProfInfo>> device_map = this_controller->CommMan->get_devices_map();
     ImGui::SetNextItemWidth(200);
     if (ImGui::BeginCombo("Device", device_combo_name.c_str())) {
         if(!device_keys.empty())   
@@ -143,6 +143,8 @@ void ConnectionBar::draw() {
 
     if (ImGui::Button("Refresh Devices")) {
         this_controller->CommMan->update_elem();
+        std::cout<<"Calling controller";
+
     }
 
     ImGui::SameLine();
@@ -229,7 +231,7 @@ void FilterBar::draw()
         ImGui::SetNextItemWidth(140);
         if (ImGui::InputText("Value", value_buf.data(), (int)value_buf.size())) {
             std::string s = value_buf.data();
-            Value v = translate::parse_type(s);  // tua funzione
+            Value v = translate::parse_type(s);  
             if (mode == Mode::UdtValue) {
                 f_el.udt_value = v;
                 f_el.value_in.reset();

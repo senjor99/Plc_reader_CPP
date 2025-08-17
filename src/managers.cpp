@@ -1,6 +1,7 @@
-#pragma once
-
 #include <managers.hpp>
+#include <classes.hpp>
+#include <hw_interface.hpp>
+#include <parser.hpp>
 
 // class NetManager 
 /*
@@ -14,6 +15,7 @@ std::map<std::string,std::shared_ptr<DeviceProfInfo>> NetManager::get_devices_ma
 
 
 void NetManager::scan_network(){ 
+    std::cout<<"Manager Getting Devices"<<"\n";
     devices= ethernet::get_devices(subnet);
     devices_keys.clear();
     devices_keys.push_back("--None--");
@@ -86,7 +88,7 @@ void DatabaseManager::create_db()
         ParserState state;
         state.DB_name = db_scope.name;
         pt::file_input<> in("./DBs/"+db_scope.path);        
-        pt::parse<complete_datablock,action>(in, state);
+        auto var = pt::parse<complete_datablock,action>(in, state);
         state.db->_set_offset();
         database = state.db;
         for(auto i : state.udt_database){udt_keys.push_back(i.first);}
@@ -148,7 +150,7 @@ void FilterManager::set_mode(Filter::filterElem f_el)
     }
     else
     {
-        reset_mode();
+        FilterManager::reset_mode();
     }
     
 }
@@ -162,6 +164,9 @@ void FilterManager::reset_mode()
 /*
 
 */
+
+CommManager::CommManager()=default;
+CommManager::~CommManager()=default; 
 
 std::vector<std::string> CommManager::get_devices_keys()const{return NetMan.get_devices_keys();}
 
@@ -198,6 +203,6 @@ void CommManager::set_database_scope(std::string& el_name_in)
 
 void CommManager::create_database(){DataMan.create_db();}
 
-void CommManager::update_elem(){ NetMan.scan_network(); DataMan.lookup_dbs();}
+void CommManager::update_elem(){std::cout<<"Manager called"<<"\n";NetMan.scan_network(); DataMan.lookup_dbs();}
 
 void CommManager::set_db_nr(int* val){DataMan.set_db_nr(val);}        

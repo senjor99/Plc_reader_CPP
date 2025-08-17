@@ -3,7 +3,7 @@
 #include <tao/pegtl.hpp>
 #include <tao/pegtl/utf8.hpp>
 #include <tao/pegtl/contrib/parse_tree.hpp>
-#include <classes.cpp>
+#include "datatype.hpp"
 
 namespace pt = tao::pegtl;
 

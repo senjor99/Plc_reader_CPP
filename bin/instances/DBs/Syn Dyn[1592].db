@@ -1,0 +1,37 @@
+﻿TYPE "SYN_DYN_UDT"
+VERSION : 0.1
+   STRUCT
+      FileName : Array[0..23] of Char;   // File Name of Background Image ( No space at all )
+      "SpareByte_24-39" : Array[0..15] of Byte;   // Spare Bytes  From 24 To 39
+      Popup : Struct   // Popup structure
+         Text_1 : Array[0..31] of Char;   // 1st Text of Popup
+         Text_2 : Array[0..31] of Char;   // 2nd Text of Popup
+         Text_3 : Array[0..31] of Char;   // 3rd Text of Popup
+         Icon : Int;   // Popup Icon Index
+         Text_Color : Char;   // Popup Text Color
+         Background_Color : Char;   // Background Color
+         Pos_X : Int;   // Distance in X of the Box Relative to Zero (From Left)
+         Pos_Y : Int;   // Distance in Y of the Box Relative to Zero (From Top)
+         "SpareByte_144-199" : Array[0..55] of Byte;   // Spare Bytes  From 144 To 199
+      END_STRUCT;
+      Message : Struct   // Message Structure
+         Text : Array[0..119] of Char;   // Message Text
+         Text_Color : Char;   // Message Text Color
+         Background_Color : Char;   // Spare Bytes  From 322 To 397
+         "SpareByte_322-397" : Array[0..75] of Byte;   // End
+         End : Bool;
+      END_STRUCT;
+   END_STRUCT;
+
+END_TYPE
+
+DATA_BLOCK "GA1_S1_Syn Dyn DB"
+{ S7_Optimized_Access := 'FALSE' }
+VERSION : 0.1
+NON_RETAIN
+"SYN_DYN_UDT"
+
+BEGIN
+
+END_DATA_BLOCK
+

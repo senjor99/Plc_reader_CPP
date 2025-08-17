@@ -11,7 +11,10 @@
 #include <optional>
 #include <algorithm>
 #include <filesystem> 
-#include "snap7.cpp"
+#include <array>
+#include <cstdlib>
+#include "snap7.h"
+#include <cxxabi.h>
 
 class Element;
 class BASE;
@@ -40,7 +43,7 @@ using VariantElement =
         std::shared_ptr<UDT_ARRAY>,
         std::shared_ptr<STRUCT_SINGLE>,
         std::shared_ptr<STRUCT_ARRAY_EL>,
-        std::shared_ptr<STRUCT_ARRAY>,
+        std::shared_ptr<STRUCT_ARRAY>
     >;
 
 using UdtRawMap = 
@@ -72,12 +75,12 @@ struct DeviceProfInfo
     std::string ip = "";
     std::string raw_name;
     std::string profiname;
-    static std::shared_ptr<DeviceProfInfo> ptr_from_S7CPUinfo(PS7CpuInfo in,std::string _ip)
+    static std::shared_ptr<DeviceProfInfo> ptr_from_S7CPUinfo(TS7CpuInfo& in,std::string _ip)
     {
         std::shared_ptr<DeviceProfInfo> res;
         res->ip = _ip;
-        res->raw_name = in->ASName;
-        res->profiname = in->ModuleName;
+        res->raw_name = in.ASName;
+        res->profiname = in.ModuleName;
         return res;
     }
 };
@@ -89,45 +92,49 @@ struct DbInfo
     int default_number;
 };
 
-std::unordered_map<std::string,std::pair<int,int>> type_size {
-    {"bool",   {  0, 1}},  
-    {"byte",   {  1, 0}}, 
-    {"char",   {  1, 0}},
-    {"word",   {  2, 0}}, 
-    {"int",    {  2, 0}},
-    {"dint",   {  4, 0}}, 
-    {"real",   {  4, 0}},
-    {"string", {256, 0}},
-    {"date",   {  2, 0}},
-    {"dword",  {  4, 0}},
-    {"lreal",  {  8, 0}},
-    {"sint",   {  1, 0}},
-    {"time",   {  4, 0}},
-    {"udint",  {  4, 0}},
-    {"uint:",  {  2, 0}},
-    {"usint",  {  1, 0}}
+struct ParserState {
+    
+    UdtRawMap udt_database;
+    std::vector<ScopeVariant> element_in_scope;
+    std::shared_ptr<DB> db;
+    std::string DB_name;
+    std::string name;
+    std::string type;
+    bool is_arr;
+    int array_start;
+    int array_end;
+    std::string udt_name;
+    std::pair<int,int> offset = {0,0};
+    
+    void clear_state();
+
+    std::shared_ptr<UDT_RAW> lookup_udt() const ;
+
+    void insert_element_inscope();
 };
+
+template<typename Rule>
+struct action {
+    template<typename Input>
+    static void apply(const Input&, DB&,ParserState&) {
+    }
+};
+
+namespace Filter
+{
+    struct filterElem 
+    {
+        std::optional<Value> value_in;
+        std::optional<std::string> name;
+        std::optional<Value> udt_value;
+        std::optional<std::string> udt_name;
+    };
+};
+
 
 using Offset = std::pair<int, int>;
 
 enum class Mode { None, Value, Name, ValueName, UdtValue };
 
 
-std::string to_lowercase(std::string s) {
-    std::transform(s.begin(), s.end(), s.begin(),
-    [](unsigned char c) { return std::tolower(c); });
-    return s;
-};
-
-namespace classes_utils
-{
-    VariantElement create_element(const VariantElement& el,std::shared_ptr<BASE_CONTAINER> par);
-
-    std::shared_ptr<UDT_RAW> lookup_udt(std::string type_to_search,UdtRawMap map);
-    
-    void apply_padding(std::pair<int,int>& offset_in);
-    
-    void check_offset(std::pair<int,int>& offset_in,std::pair<int,int>& size);
-
-    std::pair<int,int> get_size(std::string type);
-}
+std::string to_lowercase(std::string s);

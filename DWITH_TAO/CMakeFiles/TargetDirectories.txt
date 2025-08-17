@@ -1,0 +1,3 @@
+/home/denis/Projects/Plc_reader_CPP/DWITH_TAO/CMakeFiles/plc_reader.dir
+/home/denis/Projects/Plc_reader_CPP/DWITH_TAO/CMakeFiles/edit_cache.dir
+/home/denis/Projects/Plc_reader_CPP/DWITH_TAO/CMakeFiles/rebuild_cache.dir

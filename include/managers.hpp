@@ -1,7 +1,8 @@
 #pragma once
 
-#include <parser.cpp>
-#include <hw_interface.cpp>
+#include "datatype.hpp"
+#include <memory>
+#include <classes.hpp>
 
 class NetManager {
     protected:
@@ -80,8 +81,9 @@ class CommManager {
         FilterManager FilMan;
 
     public:
-        CommManager()=default;
-            
+        CommManager();
+        ~CommManager();  
+
         std::vector<std::string> get_devices_keys()const;
         std::vector<std::string> get_databases_keys()const;
         std::shared_ptr<DB> get_database();

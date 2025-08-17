@@ -3,6 +3,36 @@
 #include <datatype.hpp>
 
 
+namespace class_utils
+{
+
+    VariantElement create_element(const VariantElement& el,std::shared_ptr<BASE_CONTAINER> par);
+
+    std::shared_ptr<UDT_RAW> lookup_udt(std::string type_to_search,UdtRawMap map) ;
+
+    void apply_padding(std::pair<int,int>& offset_in);
+
+    void check_offset(std::pair<int,int>& offset_in,std::pair<int,int>& size);
+
+    std::pair<int,int> get_size(std::string type);
+}
+
+namespace translate{    
+    
+    bool get_bool(const std::vector<unsigned char>& buffer, int byteOffset, int bitOffset);
+    
+    int get_int(const std::vector<unsigned char>& buffer, int offset, int length) ;
+
+    std::string get_string(const std::vector<unsigned char>& buffer, int offset, int length);
+
+    Value generic_get(const std::vector<unsigned char>& buffer, std::pair<int,int>offset_in, const std::string& type_in);
+
+    bool parse_bool(std::string& bool_in);
+
+    Value parse_type(std::string& input);
+};
+
+
 class Element{
     protected:
         bool is_vis = true;
@@ -32,11 +62,12 @@ class BASE : public Element
     std::string get_type() const;
     std::pair<int,int> get_offset() const;
     Value get_data()const;
-    
+    bool get_vis() override;
+
     void set_name(std::string name_in);
     void set_type(std::string type_in);
     void set_data(const std::vector<unsigned char>& buffer);
-    void set_vis(bool b_in);
+    void set_vis(bool b_in) override;
     void set_offset(std::pair<int,int>& offset_in);
 };
 
@@ -56,7 +87,8 @@ class BASE_CONTAINER : public Element{
     std::string get_type()const;
     std::vector<VariantElement> get_childs()const;
     std::vector<std::pair<std::string,VariantElement>> get_names()const;
-    
+    bool get_vis() override;
+
     void set_name(std::string name_in);
     void set_type(std::string type_in);
     void insert_child(VariantElement el);
@@ -79,7 +111,7 @@ class UDT_RAW {
     UDT_RAW(std::string name);
 
     std::string get_name()const;
-    const auto& get_childs() const;
+    const std::vector<VariantElement>& get_childs() const;
 
     void insert_child(VariantElement el_to_add);
     void set_name(std::string n_in);
@@ -187,7 +219,7 @@ class UDT_ARRAY : public BASE_CONTAINER {
 class STRUCT_SINGLE  : public BASE_CONTAINER {
     public:
     STRUCT_SINGLE()=default;
-    STRUCT_SINGLE( std::string& name_in,std::string type_in="Struct");
+    STRUCT_SINGLE( std::string& name_in,std::string type_in);
     
     std::string get_name()const;
     std::string get_type()const;
@@ -203,8 +235,8 @@ class STRUCT_ARRAY_EL : public STRUCT_SINGLE {
     int max_index;
 
     public:
-    STRUCT_ARRAY_EL() = default;
-    STRUCT_ARRAY_EL(std::string& n_in,int idx,int idx_max,std::string t_in="Struct") ;
+    STRUCT_ARRAY_EL();
+    STRUCT_ARRAY_EL(std::string& n_in,int idx,int idx_max,std::string t_in) ;
 
     int get_index()const;
     int get_max_index()const;
@@ -224,14 +256,21 @@ class STRUCT_ARRAY_EL : public STRUCT_SINGLE {
 
 class STRUCT_ARRAY  : public BASE_CONTAINER {
     protected:
+    int start;
+    int end;
 
     public:
     STRUCT_ARRAY()=default;
-    STRUCT_ARRAY( std::string& name_in,std::string type_in="Struct") ;
+    STRUCT_ARRAY( std::string& name_in,std::string type_in) ;
     
     std::string get_name() const;
     std::string get_type() const;
 
+    int get_start()const;
+    int get_end()const;
+
+    void set_index(int i);
+    void set_max_index(int i);
 
     static std::shared_ptr<STRUCT_ARRAY> create_from_element
     (
@@ -259,4 +298,68 @@ class DB : public BASE_CONTAINER{
     void set_max_offset(std::pair<int,int> ofst);
     void _set_data(const std::vector<unsigned char>& buffer);
     };
+
+namespace Filter
+{
+
+    template <class Pred>
+    static bool walk_set_vis(VariantElement el, Pred pred);
+
+    bool walk_udt_value(VariantElement el,
+                           const std::string& udt_name,
+                           const Value& val,
+                           bool in_udt = false);
+
+    void ResetAll(std::shared_ptr<BASE_CONTAINER> db);
+
+    class BASE_FILTER
+    {
+    public:
+        virtual void set_filter(std::shared_ptr<DB> el) = 0;
+        virtual ~BASE_FILTER() = default;
+    };
+
+    class FILTER_VALUE : public BASE_FILTER
+    {
+    public:        
+        Value value;
+
+        FILTER_VALUE(Value in) ;
+        
+        void set_filter(std::shared_ptr<DB> el) override ;
+    };
+        
+    class FILTER_NAME : public BASE_FILTER
+    {
+    public:
+        std::string name;
+        
+        FILTER_NAME(std::string name_in);
+
+        void set_filter(std::shared_ptr<DB> el) override ;
+    };
+
+    class FILTER_VALUE_NAME: public BASE_FILTER
+    {
+        public:
+        Value value;
+        std::string name;
+        FILTER_VALUE_NAME(Value val_in, std::string n_in) ;
+        void set_filter(std::shared_ptr<DB> el) override ;
+    };
+    
+    class FILTER_VALUE_UDT: public BASE_FILTER
+    {
+        public:
+        Value value;
+        std::string udt_name;
+        FILTER_VALUE_UDT(Value val_in, std::string n_in) ;
+
+        void set_filter(std::shared_ptr<DB> el) override ;
+    };
+     
+    std::shared_ptr<BASE_FILTER> Do_Filter(filterElem* el);
+};
+
+
 

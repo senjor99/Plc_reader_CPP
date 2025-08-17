@@ -1,27 +1,21 @@
 #pragma once
 
-#include "managers.cpp"
-#include <external/imgui/imgui.h>
-#include <external/imgui/backends/imgui_impl_glfw.h>
-#include <external/imgui/backends/imgui_impl_opengl3.h>
+#include <managers.hpp>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
-class ConnectionBar;
-class Body;
-class FilterBar;
 
-class MainGUIController {
-public:
-    MainGUIController();
-
-    void draw();
-    void pick_db(std::string k_in);
-    void activate_filter(bool any_selected);
-
-    std::unique_ptr<ConnectionBar> upper_bar ;
-    std::unique_ptr<Body> body ;
-    std::unique_ptr<FilterBar> _FilterBar;
-    std::unique_ptr<CommManager> CommMan;
+namespace Filter
+{
+    struct filterElem;
+}
+namespace translate{    
+    
+    Value parse_type(std::string& input);
 };
+
+class MainGUIController;
 
 class ConnectionBar{
 protected:
@@ -80,6 +74,20 @@ public:
     
 private:
     std::string current_filter;
+};
+
+class MainGUIController {
+public:
+    MainGUIController();
+
+    void draw();
+    void pick_db(std::string k_in);
+    void activate_filter(bool any_selected);
+
+    std::unique_ptr<ConnectionBar> upper_bar ;
+    std::unique_ptr<Body> body ;
+    std::unique_ptr<FilterBar> _FilterBar;
+    std::unique_ptr<CommManager> CommMan;
 };
 
 enum window_type {
