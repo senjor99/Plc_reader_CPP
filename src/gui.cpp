@@ -142,7 +142,7 @@ void ConnectionBar::draw() {
     ImGui::SameLine();
 
     if (ImGui::Button("Refresh Devices")) {
-        this_controller->CommMan->update_elem();
+        this_controller->CommMan->refresh_device();
         std::cout<<"Calling controller";
 
     }

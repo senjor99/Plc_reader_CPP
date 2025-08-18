@@ -98,7 +98,8 @@ class CommManager {
         void reset_filter_mode();
         void set_database_scope(std::string& el_name_in);
         void create_database();
-        void update_elem();
+        void refresh_device();
+        void load_db();
         void set_db_nr(int* val);        
 };
 

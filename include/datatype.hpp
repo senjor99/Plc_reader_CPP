@@ -14,7 +14,6 @@
 #include <array>
 #include <cstdlib>
 #include "snap7.h"
-#include <cxxabi.h>
 
 class Element;
 class BASE;

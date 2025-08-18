@@ -4,18 +4,15 @@
 std::vector<std::string> folders::extensions = {".db",".udt"};
 std::string folders::directory = "./instances";
 
-std::map<std::string, std::shared_ptr<DeviceProfInfo>> ethernet::get_devices(std::string& sub )
+std::map<std::string, std::shared_ptr<DeviceProfInfo>> ethernet::get_devices(std::string& sub)
 {
-    std::cout<<"starting scan1"<<"\n";
     std::map<std::string,std::shared_ptr<DeviceProfInfo>> res;
-    std::cout<<"starting scan2"<<"\n";
     std::shared_ptr<DeviceProfInfo> DevInfo;
-    std::cout<<"starting scan3"<<"\n";
     TS7CpuInfo cp_res ;
-    std::cout<<"starting scan4"<<"\n";
 
     for(int i = 0; i<255;i++)
     {
+        std::string subnet = sub != "" ? sub  : "10.94.248";
         std::string ip = sub+std::to_string(i); 
         
         if(_ping(ip)) if(ethernet::_GetCpuInfo(ip,cp_res))
@@ -48,26 +45,34 @@ bool ethernet::_ping(std::string& ip)
 }
 
 
-
-
-void folders::_erase_extensions(std::vector<std::string>& phs)
+void folders::_erase_extensions(std::string& ph)
 {
-    for(auto& ph : phs)
-    {
-        ph =ph.substr(0, ph.find(".db"));
-        ph =ph.substr(0, ph.find(".udt"));
-    }
+    ph =ph.substr(0, ph.find(".db"));
+    ph =ph.substr(0, ph.find(".udt"));
 } 
 
-std::vector<std::string> folders::_erase_base(std::vector<std::string> phs)
+bool folders::isNumber(char c) {
+    return std::isdigit(static_cast<unsigned char>(c));
+}
+
+std::pair<int,std::string> folders::_erase_def_nr(std::string ph)
 {
-    std::string base = std::filesystem::current_path().string();
-    for(auto ph : phs)
+    _erase_extensions(ph);
+    std::string name_res;
+    std::string _number;
+
+    ph = ph.substr(0,ph.find("]"));
+
+    for(auto ch : ph)
     {
-        ph=ph.substr(0, ph.find("base"));
+        if(folders::isNumber(ch)) _number.push_back(ch);
     }
-    return phs;
-} 
+    ph= ph.substr(0,ph.find("["));
+    
+    std::cout<<_number<<" "<<ph<<"\n";
+    return {std::stoi(_number),ph};
+
+};
 
 std::map<std::string, DbInfo> folders::get_dbs()
 {
@@ -75,27 +80,31 @@ std::map<std::string, DbInfo> folders::get_dbs()
     std::map<std::string, DbInfo> res;
     std::string tmp_path;
     std::vector<std::string> tmp_c_paths;
-    std::vector<std::string> names;
+    std::string base = std::filesystem::current_path().string();
 
     if(!fs::exists(directory) || !fs::is_directory(directory))
     {
         std::cerr << "Missing direcory or wrong path, trying creating new";
         fs::create_directory(directory);
     }
+    
     for(const auto& i : fs::directory_iterator(directory))
     {
         tmp_path = i.path().filename().string();
         tmp_c_paths.push_back(tmp_path);
     }
-    _erase_extensions(tmp_c_paths);
-    names = _erase_base(tmp_c_paths);
-    for(int i = 0 ; names.size();i ++)
+   
+    
+
+
+    for(auto& i : tmp_c_paths)
     {
         DbInfo newinfo;
-        newinfo.default_number = 0;
-        newinfo.name = names[i];
-        newinfo.path = tmp_c_paths[i];
-        res[names[i]] = newinfo; 
+        std::pair<int,std::string> nr_name =folders::_erase_def_nr(i);
+        newinfo.default_number = nr_name.first;
+        newinfo.name = nr_name.second;
+        newinfo.path = base+"\\instances\\"+i;
+        res[nr_name.second] = newinfo; 
     }
     return res;
 }

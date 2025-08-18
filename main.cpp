@@ -1,6 +1,6 @@
 
 #include <gui.hpp>
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 #include <type_traits>
 
 

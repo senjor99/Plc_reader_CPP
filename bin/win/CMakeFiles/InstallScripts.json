@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/faiss/Documents/plc_reader_CPP/bin/win/cmake_install.cmake",
+		"C:/Users/faiss/Documents/plc_reader_CPP/bin/win/_deps/glfw-build/cmake_install.cmake",
+		"C:/Users/faiss/Documents/plc_reader_CPP/bin/win/_deps/glfw-build/src/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

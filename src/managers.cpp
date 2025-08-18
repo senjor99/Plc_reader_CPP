@@ -28,6 +28,7 @@ std::shared_ptr<DeviceProfInfo> NetManager::get_device_from_devices(std::string 
     if(auto it= devices.find(device_name); it != devices.end()){
         return it->second;
     }
+    else return nullptr;
 }
 
 void NetManager::set_subnet(std::string sub){subnet = sub;}
@@ -76,9 +77,9 @@ void DatabaseManager::lookup_dbs()
     db_map = folders::get_dbs();
     db_keys.clear();
     db_keys.push_back("--None--");
-
+    
     for(auto i : db_map){
-        db_keys.push_back(i.first);
+        db_keys.push_back(i.second.name);
     }
 }
 void DatabaseManager::create_db() 
@@ -87,7 +88,7 @@ void DatabaseManager::create_db()
     else{
         ParserState state;
         state.DB_name = db_scope.name;
-        pt::file_input<> in("./DBs/"+db_scope.path);        
+        pt::file_input<> in(db_scope.path);        
         auto var = pt::parse<complete_datablock,action>(in, state);
         state.db->_set_offset();
         database = state.db;
@@ -121,6 +122,8 @@ void DatabaseManager::set_db_nr(int* nr_in){db_scope.default_number = *nr_in;}
 
 bool DatabaseManager::set_db_scope(std::string key){
     if(auto it= db_map.find(key); it != db_map.end()){
+        
+        std::cout<<it->first<<" "<<it->second.path<<"\n";
         db_scope = it->second;
         return true;
     }
@@ -165,7 +168,7 @@ void FilterManager::reset_mode()
 
 */
 
-CommManager::CommManager()=default;
+CommManager::CommManager(){load_db();}
 CommManager::~CommManager()=default; 
 
 std::vector<std::string> CommManager::get_devices_keys()const{return NetMan.get_devices_keys();}
@@ -203,6 +206,8 @@ void CommManager::set_database_scope(std::string& el_name_in)
 
 void CommManager::create_database(){DataMan.create_db();}
 
-void CommManager::update_elem(){std::cout<<"Manager called"<<"\n";NetMan.scan_network(); DataMan.lookup_dbs();}
+void CommManager::refresh_device(){NetMan.scan_network();}
+
+void CommManager::load_db(){DataMan.lookup_dbs();}
 
 void CommManager::set_db_nr(int* val){DataMan.set_db_nr(val);}        
