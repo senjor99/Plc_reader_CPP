@@ -9,13 +9,12 @@ void SetModernStyle()
     ImGuiStyle& style = ImGui::GetStyle();
     ImVec4* colors = style.Colors;
 
-    // Colori principali - palette flat
-    colors[ImGuiCol_WindowBg]        = ImVec4(0.12f, 0.12f, 0.14f, 1.0f);  // background scuro
+    colors[ImGuiCol_WindowBg]        = ImVec4(0.12f, 0.12f, 0.14f, 1.0f);  
     colors[ImGuiCol_Header]          = ImVec4(0.20f, 0.22f, 0.25f, 1.0f);
     colors[ImGuiCol_HeaderHovered]   = ImVec4(0.28f, 0.30f, 0.33f, 1.0f);
     colors[ImGuiCol_HeaderActive]    = ImVec4(0.25f, 0.27f, 0.30f, 1.0f);
 
-    colors[ImGuiCol_Button]          = ImVec4(0.18f, 0.50f, 0.85f, 1.0f);  // blu flat
+    colors[ImGuiCol_Button]          = ImVec4(0.18f, 0.50f, 0.85f, 1.0f);  
     colors[ImGuiCol_ButtonHovered]   = ImVec4(0.20f, 0.55f, 0.90f, 1.0f);
     colors[ImGuiCol_ButtonActive]    = ImVec4(0.15f, 0.45f, 0.80f, 1.0f);
 
@@ -26,8 +25,7 @@ void SetModernStyle()
     colors[ImGuiCol_Text]            = ImVec4(0.95f, 0.95f, 0.95f, 1.0f);
     colors[ImGuiCol_Border]          = ImVec4(0.18f, 0.18f, 0.20f, 1.0f);
 
-    // Stile generale (flat, spazi moderni)
-    style.WindowRounding    = 6.0f;   // angoli stondati
+    style.WindowRounding    = 6.0f;   
     style.FrameRounding     = 4.0f;
     style.GrabRounding      = 4.0f;
     style.ScrollbarRounding = 6.0f;
@@ -37,7 +35,7 @@ void SetModernStyle()
 
     style.ItemSpacing       = ImVec2(8, 6);
     style.ItemInnerSpacing  = ImVec2(6, 4);
-
+    
     style.WindowPadding     = ImVec2(12, 10);
 }
 

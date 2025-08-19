@@ -60,6 +60,30 @@ using ScopeVariant =
 
 using Value = std::variant<int, bool, std::string>;
 
+class _file_
+{
+public:
+    std::string name;
+    std::string path;
+    _file_() = default;
+    _file_(std::string n_in) : name(std::move(n_in)) {}
+};
+
+class _folder_;
+using FileFolderVar = std::variant<_folder_, _file_>;
+
+class _folder_
+{
+public:
+    std::string name;
+    std::string path;
+    std::vector<FileFolderVar> elements;
+
+    _folder_() = default;
+    _folder_(std::string n_in) : name(std::move(n_in)) {}
+};
+
+
 struct ElementInfo{
     std::string indexed_name;
     std::string type;
@@ -115,7 +139,7 @@ struct ParserState {
 template<typename Rule>
 struct action {
     template<typename Input>
-    static void apply(const Input&, DB&,ParserState&) {
+    static void apply(const Input&, ParserState&) {
     }
 };
 
@@ -125,15 +149,13 @@ namespace Filter
     {
         std::optional<Value> value_in;
         std::optional<std::string> name;
-        std::optional<Value> udt_value;
-        std::optional<std::string> udt_name;
     };
 };
 
 
 using Offset = std::pair<int, int>;
 
-enum class Mode { None, Value, Name, ValueName, UdtValue };
+enum class Mode { None, Value, Name, ValueName };
 
 
 std::string to_lowercase(std::string s);

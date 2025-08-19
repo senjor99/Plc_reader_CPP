@@ -8,28 +8,17 @@
 */
 MainGUIController::MainGUIController()
     :   upper_bar(std::make_unique<ConnectionBar>(this)),
-        body(std::make_unique<Body>()),
+        body(std::make_unique<Body>(this)),
         CommMan(std::make_unique<CommManager>()),
-        _FilterBar(std::make_unique<FilterBar>(this)){}
-
-
-void MainGUIController::pick_db(std::string k_in)
-{
-    CommMan->set_database_scope(k_in);
-    for(auto i :CommMan->get_udt_keys() )
-
-    _FilterBar->set_udt_keys(CommMan->get_udt_keys());
-};
+        _FilterBar(std::make_unique<FilterBar>(this))
+        {};
 
 void MainGUIController::activate_filter(bool any_selected)
 {
+
     if(any_selected)
     {  
         CommMan->set_filter_mode(_FilterBar->get_filter_status());
-    }
-    else 
-    {
-        CommMan->reset_filter_mode();
     }
 };
 
@@ -39,10 +28,13 @@ void MainGUIController::draw()
     const ImVec2 work_pos  = viewport->WorkPos;
     const ImVec2 work_size = viewport->WorkSize;
 
+    cursor = std::make_unique<DrawingInfo>(work_pos,work_size);
+
     const float margin = 20.0f;                    
     const float x      = work_pos.x + margin;
     float       y      = work_pos.y + margin;
     const float width  = work_size.x - margin * 2.0f;
+
 
     const float header_h = 40.0f;
     const float filter_h = 40.0f;
@@ -51,27 +43,24 @@ void MainGUIController::draw()
     ImGui::SetNextWindowPos(ImVec2(x, y));
     ImGui::SetNextWindowSize(ImVec2(width, header_h));
     ImGui::Begin("HeaderWindow", nullptr, window_type::blank);
-    upper_bar->draw();
+    upper_bar->Draw();
     ImGui::End();
     y += header_h + ImGui::GetStyle().ItemSpacing.y; 
-    if (CommMan->get_database() != nullptr) {
+    if (CommMan->DataMan.get_db() != nullptr) {
         // Filter bar
         ImGui::SetNextWindowPos(ImVec2(x, y));
         ImGui::SetNextWindowSize(ImVec2(width, filter_h));
         ImGui::Begin("FilterBar", nullptr, window_type::blank);
         _FilterBar->draw();
         ImGui::End();
-        y += filter_h + ImGui::GetStyle().ItemSpacing.y;
-
-        float remaining_h = (work_pos.y + work_size.y) - y - margin;
-        if (remaining_h < 0.0f) remaining_h = 0.0f;   
-
-        ImGui::SetNextWindowPos(ImVec2(x, y));
-        ImGui::SetNextWindowSize(ImVec2(width, remaining_h));
-        ImGui::Begin("BodyWindow", nullptr, window_type::blank);
-        body->draw(CommMan->get_database());
-        ImGui::End();
+        y += filter_h + ImGui::GetStyle().ItemSpacing.y; 
     }
+
+        cursor->Cursor.x = x;
+        cursor->Cursor.y = y;
+
+        body->Draw(CommMan->DataMan.get_db());
+
 };
 
 // class MainGuiController
@@ -80,20 +69,25 @@ void MainGUIController::draw()
 /*
 
 */
-ConnectionBar::ConnectionBar(MainGUIController* controller)
-    : this_controller(controller){}
 
+ConnectionBar::ConnectionBar(MainGUIController* controller)
+    : this_controller(controller){};
+
+    
 std::string ConnectionBar::get_device_combo_name(){ return device_combo_name;}
+
 std::string ConnectionBar::get_db_combo_name(){ return db_combo_name;}
 
 void ConnectionBar::set_device_combo_name(std::string in){ device_combo_name = in;}
+
 void ConnectionBar::set_db_combo_name(std::string in){db_combo_name = in;}
 
-void ConnectionBar::draw() {
+void ConnectionBar::DrawDeviceCombo()
+{
     std::vector<std::string> device_keys =this_controller->CommMan->get_devices_keys();
     std::shared_ptr<DeviceProfInfo> device_scope = this_controller->CommMan->get_device_scope();
-    std::map<std::string,std::shared_ptr<DeviceProfInfo>> device_map = this_controller->CommMan->get_devices_map();
-    ImGui::SetNextItemWidth(200);
+    std::map<std::string,std::shared_ptr<DeviceProfInfo>> device_map = this_controller->CommMan->get_devices_map(); 
+
     if (ImGui::BeginCombo("Device", device_combo_name.c_str())) {
         if(!device_keys.empty())   
         { 
@@ -108,59 +102,62 @@ void ConnectionBar::draw() {
         }
         ImGui::EndCombo();
     }
+}
 
-    ImGui::SameLine();
-    std::vector<std::string> db_keys =this_controller->CommMan->get_databases_keys();
-    DbInfo db_scope = this_controller->CommMan->get_database_scope();
-    ImGui::SetNextItemWidth(200);
-    if (ImGui::BeginCombo("DB Struct", db_combo_name.c_str())) {
-        for (int i = 0; i < db_keys.size(); ++i) {
-            bool is_selected = (db_keys[i] == db_scope.name);
-            if (ImGui::Selectable(db_keys[i].c_str(), is_selected)) {
-                this_controller->pick_db(db_keys[i]);
-                db_combo_name = db_keys[i];
-                ImGui::SetItemDefaultFocus();
-                //ImGui::SetKeyboardFocusHere(-1);                
-            }
-            
-                
-        }
-        ImGui::EndCombo();
-    }
-
-    ImGui::SameLine();
-    
-    if(this_controller->CommMan->get_database() != nullptr){
+void ConnectionBar::DrawDbNr()
+{
+    if(this_controller->CommMan->DataMan.get_db() != nullptr)
+    {
         std::string lb = "DB NR";
-        int db_nr = this_controller->CommMan->get_database_scope().default_number;
+        int db_nr = this_controller->CommMan->DataMan.get_db_default_number();
         ImGui::SetNextItemWidth(100);
-        if(ImGui::InputScalar(lb.c_str(),ImGuiDataType_S32,&db_nr,nullptr,nullptr),ImGuiInputTextFlags_CharsDecimal){
+        if(ImGui::InputScalar(lb.c_str(),ImGuiDataType_S32,&db_nr,nullptr,nullptr),ImGuiInputTextFlags_CharsDecimal)
+        {
             this_controller->CommMan->set_db_nr(&db_nr);
         }
     }
+}
+
+void ConnectionBar::Draw() {
 
     ImGui::SameLine();
+    ImGui::SetNextItemWidth(200);
+    DrawDeviceCombo();
 
+    //ImGui::SameLine();
+    //ImGui::SetNextItemWidth(200);
+    //DrawDbCombo();
+
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    DrawDbNr();
+
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(200);
+    
+    static char buffer[256];
+
+    if (ImGui::InputText("Subnet", buffer, IM_ARRAYSIZE(buffer))) {
+        this_controller->CommMan->NetMan.set_subnet(buffer);
+    }
+    
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(200);
     if (ImGui::Button("Refresh Devices")) {
         this_controller->CommMan->refresh_device();
-        std::cout<<"Calling controller";
-
     }
 
     ImGui::SameLine();
-
-    if (ImGui::Button("Add Structure")) {
-        add_db(); 
-    }
-
+    ImGui::SetNextItemWidth(200);
     if( this_controller->CommMan->get_device_scope()!= nullptr  &&
-        this_controller->CommMan->get_database()!=nullptr ){
-        ImGui::SameLine();
+        this_controller->CommMan->DataMan.get_db()!=nullptr )
+        {
+            
         
-        if (ImGui::Button("Get Data")) {
-            this_controller->CommMan->get_plc_data();
+            if (ImGui::Button("Get Data")) 
+                this_controller->CommMan->get_plc_data();
+            
         }
-    }
 
 };
 
@@ -172,34 +169,30 @@ void ConnectionBar::draw() {
 */
 FilterBar::FilterBar(MainGUIController* controller)
     : this_controller(controller) {}
-    void FilterBar::set_udt_keys(std::vector<std::string> k_in){ udt_keys = std::move(k_in); }
-    void FilterBar::activate(){ active = !active; }
-    Filter::filterElem FilterBar::get_filter_status() const { return f_el; }
+
+void FilterBar::activate(){ active = !active; }
+
+Filter::filterElem FilterBar::get_filter_status() const { return f_el; }
     
-    const char* FilterBar::mode_label(Mode m) 
-    {
-        switch(m){
-            case Mode::None:      return "--None--";
-            case Mode::Value:     return "Value";
-            case Mode::Name:      return "Name";
-            case Mode::ValueName: return "Value-Name";
-            case Mode::UdtValue:  return "Deprecated";
-        }
-        return "";
+const char* FilterBar::mode_label(Mode m) 
+{
+    switch(m){
+        case Mode::None:      return "--None--";
+        case Mode::Value:     return "Value";
+        case Mode::Name:      return "Name";
+        case Mode::ValueName: return "Value-Name";
     }
+    return "";
+}
 
 void FilterBar::draw()
 {
     const char* btn = active ? "Unfilter" : "Filter";
     if (ImGui::Button(btn)) activate();
     ImGui::SameLine();
-
     if (!active) {
-        // disattivo tutto
         f_el.value_in.reset();
         f_el.name.reset();
-        f_el.udt_value.reset();
-        f_el.udt_name.reset();
         this_controller->activate_filter(false);
         return;
     }
@@ -216,59 +209,45 @@ void FilterBar::draw()
         pick(Mode::Value);
         pick(Mode::Name);
         pick(Mode::ValueName);
-        pick(Mode::UdtValue);
         ImGui::EndCombo();
     }
 
     ImGui::SameLine();
 
-    bool needValue = (mode == Mode::Value || mode == Mode::ValueName || mode == Mode::UdtValue);
+    bool needValue = (mode == Mode::Value || mode == Mode::ValueName);
     bool needName  = (mode == Mode::Name  || mode == Mode::ValueName);
-    bool needUdt   = (mode == Mode::UdtValue);
 
-    // VALUE
-    if (needValue) {
+    if (needValue) 
+    {
         ImGui::SetNextItemWidth(140);
         if (ImGui::InputText("Value", value_buf.data(), (int)value_buf.size())) {
             std::string s = value_buf.data();
             Value v = translate::parse_type(s);  
-            if (mode == Mode::UdtValue) {
-                f_el.udt_value = v;
-                f_el.value_in.reset();
-            } else {
                 f_el.value_in  = v;
-                f_el.udt_value.reset();
-            }
         }
-    } else {
-        f_el.value_in.reset();
-        f_el.udt_value.reset();
-    }
+    } 
+    else f_el.value_in.reset();
 
     ImGui::SameLine();
 
-    // NAME
-    if (needName) {
+    if (needName) 
+    {
         ImGui::SetNextItemWidth(140);
         if (ImGui::InputText("Name", name_buf.data(), (int)name_buf.size())) {
             if (name_buf[0] != '\0') f_el.name = std::string(name_buf.data());
             else f_el.name.reset();
         }
-    } else {
-        f_el.name.reset();
-    }
+    } 
+    else f_el.name.reset();
 
     ImGui::SameLine();
-    f_el.udt_name.reset();
 
-    // --- attiva/disattiva il filtro a controller ---
     bool any_active = false;
     switch (mode) {
         case Mode::None:      any_active = false; break;
         case Mode::Value:     any_active = f_el.value_in.has_value(); break;
         case Mode::Name:      any_active = f_el.name.has_value(); break;
         case Mode::ValueName: any_active = f_el.value_in.has_value() || f_el.name.has_value(); break;
-        case Mode::UdtValue:  any_active = f_el.udt_value.has_value() && f_el.udt_name.has_value(); break;
     }
     this_controller->activate_filter(any_active);
 }
@@ -279,19 +258,23 @@ void FilterBar::draw()
 /*
 
 */
+Body::Body(MainGUIController* main)
+    :this_controller(main){};
 
-void Body::draw_node(const VariantElement& element,int& depth_in){
+
+void Body::Draw_node(const VariantElement& element,int& depth_in){
 
     std::visit([&](auto&& ptr) {
         using T = std::decay_t<decltype(*ptr)>;
         std::string label = ptr->get_name() ;
+        
         if constexpr (std::is_base_of_v<BASE_CONTAINER, T>) {
             if(ptr->get_vis())
                 if (ImGui::TreeNodeEx(label.c_str(), ImGuiTreeNodeFlags_Framed|ImGuiTreeNodeFlags_OpenOnDoubleClick|ImGuiTreeNodeFlags_OpenOnArrow)) {
                     ++depth_in;
                     for (const auto& child : ptr->get_childs()) {
                         if(ptr->get_vis())
-                            draw_node(child, depth_in);
+                            Draw_node(child, depth_in);
                     }
                     --depth_in;
                     ImGui::TreePop();
@@ -300,11 +283,6 @@ void Body::draw_node(const VariantElement& element,int& depth_in){
         else if constexpr (std::is_base_of_v<BASE, T>) {
             if(ptr->get_vis())
                 if (ImGui::TreeNodeEx(label.c_str(),ImGuiTreeNodeFlags_Leaf| ImGuiTreeNodeFlags_DefaultOpen|ImGuiTreeNodeFlags_Framed|ImGuiTreeNodeFlags_OpenOnDoubleClick)) {
-                    
-                    ImGui::Text("%s : %s",("Parent: "),ptr->get_parent()->get_name().c_str());
-
-                    ImGui::Text("%s: %s", ("Type: "), ptr->get_type().c_str());
-                    ImGui::Text("%s: %s.%s", ("Offset: "),std::to_string(ptr->get_offset().first).c_str(),std::to_string(ptr->get_offset().second).c_str());
                     Value data=ptr->get_data();
                     std::string data_label  = "Data";
                     ImGui::Text("%s: ", data_label.c_str());
@@ -336,10 +314,86 @@ void Body::draw_node(const VariantElement& element,int& depth_in){
     },element);
 }
 
-void Body::draw(const std::shared_ptr<DB>& db) {
+void Body::Draw_Explorer()
+{
+    if (ImGui::Button("Add DB")) {
+        this_controller->CommMan->add_new_db();
+    }
+    ImGui::SameLine();
+
+    if (ImGui::Button("Add Directory")) {
+        this_controller->CommMan->add_directory();
+    }
+    _folder_ dirs = this_controller->CommMan->get_directory();
+    Draw_DirectoryTree(dirs);
+
+}
+
+void Body::Draw_DirectoryTree(const FileFolderVar& el)
+{
+    if (std::holds_alternative<_folder_>(el))
+    {
+        _folder_ f = std::get<_folder_>(el);
+        if (ImGui::TreeNodeEx(f.name.c_str(), ImGuiTreeNodeFlags_Framed|ImGuiTreeNodeFlags_OpenOnDoubleClick|ImGuiTreeNodeFlags_OpenOnArrow))
+        {
+            for(auto i: f.elements) Draw_DirectoryTree(i);
+            ImGui::TreePop();
+        }
+    }
+    else
+    {
+        _file_ f = std::get<_file_>(el);
+        if (ImGui::TreeNodeEx(f.name.c_str(), ImGuiTreeNodeFlags_Framed|ImGuiTreeNodeFlags_OpenOnDoubleClick|ImGuiTreeNodeFlags_OpenOnArrow))
+        {
+            if (ImGui::Button("Open")) {
+                DbInfo db = DbInfo();
+                db.default_number = 0;
+                db.name = f.name;
+                db.path = f.path;
+                this_controller->CommMan->DataMan.set_db_scope(db);
+            }
+            ImGui::SameLine();
+
+            if (ImGui::Button("TEST")) {
+                //this_controller->CommMan->add_directory();
+            }
+            ImGui::TreePop();
+        }
+    }  
+};
+
+void Body::Draw(const std::shared_ptr<DB>& db) {
+    
     int depth;
-    for (const auto& element : db->get_childs()) {
-        draw_node(element, depth);
+    const float margin = 20.0f;   
+    
+    ImVec2 Cursor= this_controller->cursor->Cursor;
+    ImVec2 PortView =this_controller->cursor->Initial_PortView;
+
+    ImVec2 NextWin_Size = ImVec2( PortView.x/4.0f,PortView.y -(Cursor.y+2*ImGui::GetStyle().ItemSpacing.y));
+    ImVec2 NextWin_Pos = ImVec2(Cursor.x ,Cursor.y);
+
+    ImGui::SetNextWindowSize(NextWin_Size);
+    ImGui::SetNextWindowPos(NextWin_Pos);
+    
+    Cursor.x = NextWin_Pos.x+NextWin_Size.x;
+
+    ImGui::Begin("FileExplorer", nullptr, window_type::blank);
+    Draw_Explorer();
+    ImGui::End();
+
+    NextWin_Pos = ImVec2(Cursor.x,Cursor.y);
+    NextWin_Size = ImVec2(PortView.x -(NextWin_Pos.x+ImGui::GetStyle().ItemSpacing.x),PortView.y -(NextWin_Pos.y));
+
+    if (db != nullptr) 
+    {
+        ImGui::SetNextWindowSize(NextWin_Size);
+        ImGui::SetNextWindowPos(NextWin_Pos);
+        ImGui::Begin("FileShower", nullptr, window_type::blank);
+            for (const auto& element : db->get_childs()) {
+                Draw_node(element, depth);
+            }
+        ImGui::End();
     }
 }
 

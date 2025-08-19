@@ -363,12 +363,6 @@ WITH_SNAP7:BOOL=ON
 //Usa TAO/PEGTL (header-only)
 WITH_TAO:BOOL=ON
 
-//No help, variable specified on the command line.
-WITH_TAW:UNINITIALIZED=ON
-
-//No help, variable specified on the command line.
-WITH_TAo:UNINITIALIZED=ON
-
 
 ########################
 # INTERNAL cache entries

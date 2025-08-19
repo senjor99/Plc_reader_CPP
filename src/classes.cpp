@@ -56,50 +56,27 @@ bool Filter::walk_set_vis(VariantElement el, Pred pred) {
     }, el);
 }
 
-bool Filter::walk_udt_value(VariantElement el,
-                        const std::string& udt_name,
-                        const Value& val,
-                        bool in_udt ) {
-    return std::visit([&](auto& ptr) -> bool {
+void Filter::reset_vis(VariantElement el)
+{
+    std::visit([&](auto& ptr) {
         using T = std::decay_t<decltype(ptr)>;
         using E = typename T::element_type;
 
-        if constexpr (std::is_base_of_v<BASE, E>) 
-        {
-            bool match = in_udt && (ptr->get_data() == val);
-            ptr->set_vis(match);
-            return match;
-
-        } 
-        else if constexpr (std::is_base_of_v<BASE_CONTAINER, E>) {
-            bool here = in_udt || (ptr->get_name() == udt_name);
-            bool any  = false;
-            for (auto& ch : ptr->get_childs())
-                any |= walk_udt_value(ch, udt_name, val, here);
-
-                ptr->set_vis(here && any);
-            return here && any;
+        if constexpr(std::is_base_of_v<BASE,E>){
+            ptr->set_vis(true);
         }
-    }, el);
-}
+        else if constexpr(std::is_base_of_v<BASE_CONTAINER,E>){
+            for (auto& ch : ptr->get_childs())
+                reset_vis(ch);
+        }
+        },el);
+};
 
-void Filter::ResetAll(std::shared_ptr<BASE_CONTAINER> db) 
+void Filter::RESET_FILTER::set_filter(std::shared_ptr<DB> el) 
 {
-    for (auto& ch : db->get_childs())
-        std::visit([&](auto& ptr) {
-            using T = std::decay_t<decltype(ptr)>;
-            using E = typename T::element_type;
-
-            if constexpr(std::is_base_of_v<BASE,E>){
-                ptr->set_vis(true);
-            }
-            else if constexpr(std::is_base_of_v<BASE_CONTAINER,E>){
-                ptr->set_vis(true);
-                Filter::ResetAll(ptr);
-            }
-        },ch);
-}
-
+    for (auto& ch : el->get_childs())
+        Filter::reset_vis(ch);
+};
 
 Filter::FILTER_VALUE::FILTER_VALUE(Value in) : value(in) {}
     
@@ -136,40 +113,22 @@ Filter::FILTER_VALUE_NAME::FILTER_VALUE_NAME(Value val_in, std::string n_in)
                 return b.get_name() == name && b.get_data() == value;
             });
     }
-
-Filter::FILTER_VALUE_UDT::FILTER_VALUE_UDT(Value val_in, std::string n_in) 
-    : value(val_in),udt_name(n_in) {}
-
-
-
-    void Filter::FILTER_VALUE_UDT::set_filter(std::shared_ptr<DB> el) {
-        for (auto& ch : el->get_childs())
-            walk_udt_value(ch, udt_name, value, false);
-    }
-
     
 std::shared_ptr<Filter::BASE_FILTER> Filter::Do_Filter(filterElem* el)
 {
-    if(el->value_in.has_value() && !el->name.has_value() && !el->udt_name.has_value() && !el->udt_value.has_value()){
+    if(el->value_in.has_value() && !el->name.has_value()){
         return std::make_shared<FILTER_VALUE>(el->value_in.value());
     }
-    else if(!el->value_in.has_value() && el->name.has_value() && !el->udt_name.has_value() && !el->udt_value.has_value()){
+    else if(!el->value_in.has_value() && el->name.has_value() ){
         return std::make_shared<FILTER_NAME>(el->name.value());
     }
-    else if(el->value_in.has_value() && el->name.has_value() && !el->udt_name.has_value() && !el->udt_value.has_value()){
+    else if(el->value_in.has_value() && el->name.has_value() ){
         return std::make_shared<FILTER_VALUE_NAME>(el->value_in.value(),el->name.value());
     }
-    else if((!el->value_in.has_value() && !el->name.has_value()) && el->udt_name.has_value() || el->udt_value.has_value()){
-        std::string udt_name = el->udt_name.has_value() ? el->udt_name.value() : "";
-        Value udt_value = el->udt_value.has_value() ? el->udt_value.value() : "";
-
-        return std::make_shared<FILTER_VALUE_UDT>(udt_value,udt_name);
-    }
-    else if(!el->value_in.has_value() && !el->name.has_value() && !el->udt_name.has_value() && !el->udt_value.has_value()){
-        return nullptr;
+    else if(!el->value_in.has_value() && !el->name.has_value() ){
+        return std::make_shared<RESET_FILTER>();
     }
     else{
-        std::cout<<"value: "<<el->value_in.has_value()<<"name: "<<el->name.has_value()<<"udt_name: "<<el->udt_name.has_value()<<"udt_value: "<<el->udt_value.has_value()<<"\n"; 
         throw std::logic_error("Invalid combination of arguments in Do_Filter");
     }
 };

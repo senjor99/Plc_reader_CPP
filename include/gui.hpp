@@ -17,6 +17,20 @@ namespace translate{
 
 class MainGUIController;
 
+class DrawingInfo
+{
+    public:
+        DrawingInfo()=default;
+        DrawingInfo(ImVec2 StartCursor,ImVec2 StartPortView)
+            :initial_work_pos(StartCursor),Initial_PortView(StartPortView){};
+        
+        const ImVec2 initial_work_pos  ;
+        const ImVec2 Initial_PortView ;
+        
+        ImVec2 PortView ;
+        ImVec2 Cursor;
+};
+
 class ConnectionBar{
 protected:
     MainGUIController* this_controller;
@@ -32,9 +46,10 @@ public:
 
     void set_device_combo_name(std::string in);
     void set_db_combo_name(std::string in);
-    
-    void draw();
-    void add_db(){}
+    void Draw();
+    void DrawDeviceCombo();
+    void DrawDbNr();
+    void add_db();
 };
 
 class FilterBar {
@@ -57,9 +72,6 @@ class FilterBar {
         FilterBar() = default;    
         FilterBar(MainGUIController* controller);
 
-        
-
-        void set_udt_keys(std::vector<std::string> k_in);
         void activate();
         Filter::filterElem get_filter_status() const;
         void draw();
@@ -69,11 +81,14 @@ class FilterBar {
 class Body {
 public:
     Body() = default;
-    void draw_node(const VariantElement& element,int&depth_in);
-    void draw(const std::shared_ptr<DB>& db);
-    
+    Body(MainGUIController* main);
+    void Draw_node(const VariantElement& element,int&depth_in);
+    void Draw_Explorer();
+    void Draw_DirectoryTree(const FileFolderVar& el);
+    void Draw(const std::shared_ptr<DB>& db);
 private:
     std::string current_filter;
+    MainGUIController* this_controller;
 };
 
 class MainGUIController {
@@ -81,9 +96,9 @@ public:
     MainGUIController();
 
     void draw();
-    void pick_db(std::string k_in);
     void activate_filter(bool any_selected);
 
+    std::unique_ptr<DrawingInfo> cursor;
     std::unique_ptr<ConnectionBar> upper_bar ;
     std::unique_ptr<Body> body ;
     std::unique_ptr<FilterBar> _FilterBar;

@@ -285,7 +285,7 @@ class STRUCT_ARRAY  : public BASE_CONTAINER {
 class DB : public BASE_CONTAINER{
     protected:
     int default_nr;
-    std::pair<int,int> offset_max ; 
+    std::pair<int,int> offset_max; 
     
     public:
     DB() = default;
@@ -305,12 +305,7 @@ namespace Filter
     template <class Pred>
     static bool walk_set_vis(VariantElement el, Pred pred);
 
-    bool walk_udt_value(VariantElement el,
-                           const std::string& udt_name,
-                           const Value& val,
-                           bool in_udt = false);
 
-    void ResetAll(std::shared_ptr<BASE_CONTAINER> db);
 
     class BASE_FILTER
     {
@@ -347,17 +342,16 @@ namespace Filter
         FILTER_VALUE_NAME(Value val_in, std::string n_in) ;
         void set_filter(std::shared_ptr<DB> el) override ;
     };
-    
-    class FILTER_VALUE_UDT: public BASE_FILTER
+         
+    class RESET_FILTER: public BASE_FILTER
     {
         public:
-        Value value;
-        std::string udt_name;
-        FILTER_VALUE_UDT(Value val_in, std::string n_in) ;
-
-        void set_filter(std::shared_ptr<DB> el) override ;
+        RESET_FILTER()=default;
+        void set_filter(std::shared_ptr<DB> el) override;
     };
-     
+   
+    void reset_vis(VariantElement el);
+    
     std::shared_ptr<BASE_FILTER> Do_Filter(filterElem* el);
 };
 
