@@ -1,0 +1,5 @@
+# Git library
+.external/imgui
+.external/glfw
+.external/PETGL
+.external/snap7
