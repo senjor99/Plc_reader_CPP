@@ -34,18 +34,14 @@ class DrawingInfo
 class ConnectionBar{
 protected:
     MainGUIController* this_controller;
-    std::string device_combo_name ="--None--";
-    std::string db_combo_name = "--None--";
-
+    std::string device_combo_name ="Select device";
 public:
     ConnectionBar() = default;
     ConnectionBar(MainGUIController* controller);
 
     std::string get_device_combo_name();
-    std::string get_db_combo_name();
 
     void set_device_combo_name(std::string in);
-    void set_db_combo_name(std::string in);
     void Draw();
     void DrawDeviceCombo();
     void DrawDbNr();
@@ -96,7 +92,7 @@ public:
     MainGUIController();
 
     void draw();
-    void activate_filter(bool any_selected);
+    void activate_filter();
 
     std::unique_ptr<DrawingInfo> cursor;
     std::unique_ptr<ConnectionBar> upper_bar ;

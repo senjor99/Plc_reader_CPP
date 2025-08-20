@@ -55,16 +55,13 @@ class DatabaseManager {
         void set_db_data(const std::vector<unsigned char> buffer);
 };
 
-
 class FilterManager{
     protected:
         std::shared_ptr<DB> db_ptr;
         std::shared_ptr<Filter::BASE_FILTER> filter_ptr;
     public:
-        void set_db(std::shared_ptr<DB> db_in);
         void set_mode(Filter::filterElem f_el);
-        void reset_mode();
-      
+        void set_dbPtr(std::shared_ptr<DB> ptr);
 };
 
 class CommManager

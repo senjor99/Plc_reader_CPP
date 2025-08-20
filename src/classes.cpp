@@ -66,6 +66,7 @@ void Filter::reset_vis(VariantElement el)
             ptr->set_vis(true);
         }
         else if constexpr(std::is_base_of_v<BASE_CONTAINER,E>){
+            ptr->set_vis(true);
             for (auto& ch : ptr->get_childs())
                 reset_vis(ch);
         }
@@ -125,7 +126,7 @@ std::shared_ptr<Filter::BASE_FILTER> Filter::Do_Filter(filterElem* el)
     else if(el->value_in.has_value() && el->name.has_value() ){
         return std::make_shared<FILTER_VALUE_NAME>(el->value_in.value(),el->name.value());
     }
-    else if(!el->value_in.has_value() && !el->name.has_value() ){
+    else if(!el->value_in.has_value() && !el->name.has_value()){
         return std::make_shared<RESET_FILTER>();
     }
     else{

@@ -293,7 +293,7 @@ class DB : public BASE_CONTAINER{
 
     std::string get_name() const;
     std::pair<int,int> get_max_offset()const;
-
+    
     void _set_offset();
     void set_max_offset(std::pair<int,int> ofst);
     void _set_data(const std::vector<unsigned char>& buffer);

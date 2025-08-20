@@ -1,5 +1,6 @@
 # Git library
-.external/imgui
-.external/glfw
-.external/PETGL
-.external/snap7
+/external/glad
+/external/glfw
+/external/imgui
+/external/PEGTL
+/external/snap7

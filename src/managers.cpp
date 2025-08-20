@@ -75,8 +75,6 @@ bool NetManager::plc_data_send(int db_nr,int size,std::vector<unsigned char> buf
 
 void DatabaseManager::create_db() 
 {
-    
-
     if(db_scope.name == "" ) {database = nullptr;}
     else{
         
@@ -116,17 +114,17 @@ void DatabaseManager::set_db_data(const std::vector<unsigned char> buffer){datab
 /*
 
 */
-
-void FilterManager::set_db(std::shared_ptr<DB> db_in){db_ptr = db_in;}
-
 void FilterManager::set_mode(Filter::filterElem f_el)
 {
+
     filter_ptr = Filter::Do_Filter(&f_el);
     if(filter_ptr != nullptr)
     {
         filter_ptr->set_filter(db_ptr);
     }
 }
+
+void FilterManager::set_dbPtr(std::shared_ptr<DB> ptr){db_ptr = ptr;};
 
 // class FilterManager 
 
@@ -135,7 +133,7 @@ void FilterManager::set_mode(Filter::filterElem f_el)
 
 */
 
-CommManager::CommManager(){}//load_db();}
+CommManager::CommManager()=default;
 CommManager::~CommManager()=default; 
 
 std::vector<std::string> CommManager::get_devices_keys()const{return NetMan.get_devices_keys();}
@@ -155,7 +153,11 @@ void CommManager::set_plc_data(){NetMan.plc_data_retrieve(DataMan.get_db_default
 
 void CommManager::set_device_scope(std::string& el_name_in){NetMan.set_device_scope(el_name_in);}
 
-void CommManager::set_filter_mode(Filter::filterElem f_el){FilMan.set_mode(f_el);}
+void CommManager::set_filter_mode(Filter::filterElem f_el)
+{
+    FilMan.set_dbPtr(DataMan.get_db());
+    FilMan.set_mode(f_el);
+}
 
 void CommManager::add_new_db(){}
 

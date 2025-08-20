@@ -13,13 +13,9 @@ MainGUIController::MainGUIController()
         _FilterBar(std::make_unique<FilterBar>(this))
         {};
 
-void MainGUIController::activate_filter(bool any_selected)
+void MainGUIController::activate_filter()
 {
-
-    if(any_selected)
-    {  
-        CommMan->set_filter_mode(_FilterBar->get_filter_status());
-    }
+    CommMan->set_filter_mode(_FilterBar->get_filter_status());
 };
 
 void MainGUIController::draw()
@@ -36,8 +32,8 @@ void MainGUIController::draw()
     const float width  = work_size.x - margin * 2.0f;
 
 
-    const float header_h = 40.0f;
-    const float filter_h = 40.0f;
+    const float header_h = 46.0f;
+    const float filter_h = 46.0f;
 
     // Header
     ImGui::SetNextWindowPos(ImVec2(x, y));
@@ -76,11 +72,7 @@ ConnectionBar::ConnectionBar(MainGUIController* controller)
     
 std::string ConnectionBar::get_device_combo_name(){ return device_combo_name;}
 
-std::string ConnectionBar::get_db_combo_name(){ return db_combo_name;}
-
 void ConnectionBar::set_device_combo_name(std::string in){ device_combo_name = in;}
-
-void ConnectionBar::set_db_combo_name(std::string in){db_combo_name = in;}
 
 void ConnectionBar::DrawDeviceCombo()
 {
@@ -136,10 +128,12 @@ void ConnectionBar::Draw() {
     ImGui::SetNextItemWidth(200);
     
     static char buffer[256];
-
+    
     if (ImGui::InputText("Subnet", buffer, IM_ARRAYSIZE(buffer))) {
         this_controller->CommMan->NetMan.set_subnet(buffer);
     }
+    
+    ImVec2 curs = ImGui::GetCursorPos();
     
     ImGui::SameLine();
     ImGui::SetNextItemWidth(200);
@@ -177,7 +171,7 @@ Filter::filterElem FilterBar::get_filter_status() const { return f_el; }
 const char* FilterBar::mode_label(Mode m) 
 {
     switch(m){
-        case Mode::None:      return "--None--";
+        case Mode::None:      return "None";
         case Mode::Value:     return "Value";
         case Mode::Name:      return "Name";
         case Mode::ValueName: return "Value-Name";
@@ -187,13 +181,16 @@ const char* FilterBar::mode_label(Mode m)
 
 void FilterBar::draw()
 {
+   
+
     const char* btn = active ? "Unfilter" : "Filter";
     if (ImGui::Button(btn)) activate();
     ImGui::SameLine();
     if (!active) {
         f_el.value_in.reset();
         f_el.name.reset();
-        this_controller->activate_filter(false);
+        this_controller->activate_filter();
+        mode = Mode::None;
         return;
     }
 
@@ -221,12 +218,12 @@ void FilterBar::draw()
     {
         ImGui::SetNextItemWidth(140);
         if (ImGui::InputText("Value", value_buf.data(), (int)value_buf.size())) {
-            std::string s = value_buf.data();
-            Value v = translate::parse_type(s);  
-                f_el.value_in  = v;
+            std::string s_ = value_buf.data();
+            Value v_ = translate::parse_type(s_);  
+            if (s_ != "") f_el.value_in  = v_;
+            else f_el.value_in.reset();
         }
     } 
-    else f_el.value_in.reset();
 
     ImGui::SameLine();
 
@@ -234,11 +231,11 @@ void FilterBar::draw()
     {
         ImGui::SetNextItemWidth(140);
         if (ImGui::InputText("Name", name_buf.data(), (int)name_buf.size())) {
-            if (name_buf[0] != '\0') f_el.name = std::string(name_buf.data());
+            std::string s = name_buf.data();
+            if (s != "")f_el.name  = s;
             else f_el.name.reset();
         }
     } 
-    else f_el.name.reset();
 
     ImGui::SameLine();
 
@@ -249,7 +246,7 @@ void FilterBar::draw()
         case Mode::Name:      any_active = f_el.name.has_value(); break;
         case Mode::ValueName: any_active = f_el.value_in.has_value() || f_el.name.has_value(); break;
     }
-    this_controller->activate_filter(any_active);
+    this_controller->activate_filter();
 }
 
 // class FilterBar
@@ -370,7 +367,7 @@ void Body::Draw(const std::shared_ptr<DB>& db) {
     ImVec2 Cursor= this_controller->cursor->Cursor;
     ImVec2 PortView =this_controller->cursor->Initial_PortView;
 
-    ImVec2 NextWin_Size = ImVec2( PortView.x/4.0f,PortView.y -(Cursor.y+2*ImGui::GetStyle().ItemSpacing.y));
+    ImVec2 NextWin_Size = ImVec2( PortView.x/4.0f,PortView.y -(Cursor.y+ImGui::GetStyle().ItemSpacing.y+ImGui::GetStyle().WindowPadding.y));
     ImVec2 NextWin_Pos = ImVec2(Cursor.x ,Cursor.y);
 
     ImGui::SetNextWindowSize(NextWin_Size);
@@ -382,8 +379,8 @@ void Body::Draw(const std::shared_ptr<DB>& db) {
     Draw_Explorer();
     ImGui::End();
 
-    NextWin_Pos = ImVec2(Cursor.x,Cursor.y);
-    NextWin_Size = ImVec2(PortView.x -(NextWin_Pos.x+ImGui::GetStyle().ItemSpacing.x),PortView.y -(NextWin_Pos.y));
+    NextWin_Pos = ImVec2(Cursor.x+ImGui::GetStyle().ItemSpacing.y,Cursor.y);
+    NextWin_Size = ImVec2(PortView.x -(NextWin_Pos.x+ImGui::GetStyle().ItemSpacing.x+ImGui::GetStyle().WindowPadding.x),PortView.y -(NextWin_Pos.y+ImGui::GetStyle().ItemSpacing.y+ImGui::GetStyle().WindowPadding.y));
 
     if (db != nullptr) 
     {

@@ -25,18 +25,24 @@ void SetModernStyle()
     colors[ImGuiCol_Text]            = ImVec4(0.95f, 0.95f, 0.95f, 1.0f);
     colors[ImGuiCol_Border]          = ImVec4(0.18f, 0.18f, 0.20f, 1.0f);
 
-    style.WindowRounding    = 6.0f;   
-    style.FrameRounding     = 4.0f;
+    style.WindowRounding    = 16.0f;   
+    style.FrameRounding     = 16.0f;
     style.GrabRounding      = 4.0f;
     style.ScrollbarRounding = 6.0f;
 
-    style.WindowBorderSize  = 1.0f;
-    style.FrameBorderSize   = 1.0f;
+    style.WindowBorderSize  = 0.5f;
+    style.FrameBorderSize   = 0.0f;
+    style.FramePadding      = ImVec2(13,4);
 
     style.ItemSpacing       = ImVec2(8, 6);
     style.ItemInnerSpacing  = ImVec2(6, 4);
     
     style.WindowPadding     = ImVec2(12, 10);
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    ImFont* myFont = io.Fonts->AddFontFromFileTTF("./bin/linux/font/Roboto-Regular.ttf", 17.0f);
+    ImGui::PushFont(myFont);
 }
 
 int main() {

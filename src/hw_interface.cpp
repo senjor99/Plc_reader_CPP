@@ -58,7 +58,9 @@ void walk_dir(_folder_& dir, const std::string& path, std::string& f_path)
         }
         else
         {
-            _file_ new_file(i.path().filename().string());
+            auto name = i.path().filename().string();
+            //name = name.substr(0,name.find(".db"));
+            _file_ new_file(name);
             new_file.path=f_path+"/"+new_file.name;
             dir.elements.push_back(std::move(new_file));
         }

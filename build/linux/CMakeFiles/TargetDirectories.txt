@@ -1,0 +1,3 @@
+/home/denis/Projects/Plc_reader_CPP/build/linux/CMakeFiles/plc_reader.dir
+/home/denis/Projects/Plc_reader_CPP/build/linux/CMakeFiles/edit_cache.dir
+/home/denis/Projects/Plc_reader_CPP/build/linux/CMakeFiles/rebuild_cache.dir
