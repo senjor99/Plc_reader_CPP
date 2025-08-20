@@ -342,6 +342,9 @@ GLFW_SOURCE_DIR:STATIC=C:/Users/faiss/Documents/plc_reader_CPP/external/glfw
 //Force use of high-performance GPU on hybrid systems
 GLFW_USE_HYBRID_HPG:BOOL=OFF
 
+//Path to a library.
+NPCAP_LIB:FILEPATH=C:/Users/faiss/Documents/plc_reader_CPP/external/pcap/Lib/wpcap.lib
+
 //OpenGL library for win32
 OPENGL_gl_LIBRARY:STRING=opengl32
 

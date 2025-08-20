@@ -40,10 +40,12 @@ add_executable(plc_reader
   src/hw_interface.cpp
   src/managers.cpp
   src/parser.cpp
+  src/profi_DCP.cpp
 )
 
 target_include_directories(plc_reader PRIVATE
   ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/external/pcap
 )
 
 # ------------------------------
@@ -97,6 +99,17 @@ if (WITH_SNAP7)
     target_compile_definitions(plc_reader PRIVATE WITH_SNAP7=1)
   else()
     message(FATAL_ERROR "Cartella Snap7 non trovata in: ${SNAP7_ROOT}")
+  endif()
+
+  if (WIN32)
+    set(NPCAP_DIR ${CMAKE_SOURCE_DIR}/external/pcap)
+    find_library(NPCAP_LIB NAMES wpcap Packet PATHS ${NPCAP_DIR}/Lib )
+    if(NPCAP_LIB)
+      target_link_libraries(plc_reader PRIVATE ${NPCAP_LIB})
+      message("-- Npcap library linked correctly")
+    else()
+      message(WARNING "Npcap lib not found")
+    endif()
   endif()
 endif()
 
@@ -205,9 +218,8 @@ if (WIN32 AND WITH_SNAP7)
     add_custom_command(TARGET plc_reader POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
               "${SNAP7_DLL}" "$<TARGET_FILE_DIR:plc_reader>"
-      COMMENT "Copia snap7.dll vicino all'eseguibile"
-    )
-  endif()
+      COMMENT "Copia snap7.dll vicino all'eseguibile")
+    endif()
 endif()
 
 # ------------------------------

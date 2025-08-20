@@ -17,7 +17,7 @@ std::string NetManager::get_subnet(){return subnet;}
 
 void NetManager::scan_network(){ 
     std::cout<<"Manager Getting Devices"<<"\n";
-    devices= ethernet::get_devices(subnet);
+    //devices= ethernet::get_devices(subnet);
     devices_keys.clear();
     devices_keys.push_back("--None--");
     for(auto i : devices){

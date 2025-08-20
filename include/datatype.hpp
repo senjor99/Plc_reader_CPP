@@ -136,6 +136,7 @@ struct ParserState {
     void insert_element_inscope();
 };
 
+
 template<typename Rule>
 struct action {
     template<typename Input>
