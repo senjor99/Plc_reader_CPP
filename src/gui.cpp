@@ -80,7 +80,7 @@ void ConnectionBar::DrawDeviceCombo()
     std::shared_ptr<DeviceProfInfo> device_scope = this_controller->CommMan->get_device_scope();
     std::map<std::string,std::shared_ptr<DeviceProfInfo>> device_map = this_controller->CommMan->get_devices_map(); 
 
-    if (ImGui::BeginCombo("Device", device_combo_name.c_str())) {
+    if (ImGui::BeginCombo("", device_combo_name.c_str())) {
         if(!device_keys.empty())   
         { 
             for (int i = 0; i < device_keys.size(); ++i) {
@@ -96,6 +96,24 @@ void ConnectionBar::DrawDeviceCombo()
     }
 }
 
+void ConnectionBar::DrawNetCardCombo()
+{
+    std::vector<std::string> net_cards = this_controller->CommMan->NetMan.get_netCards();
+
+    if (ImGui::BeginCombo("", card_combo_name.c_str())) {
+        if(!net_cards.empty())   
+        { 
+            for (int i = 0; i < net_cards.size(); ++i) {
+                bool is_selected = (card_combo_name ==  net_cards[i]);
+                if (ImGui::Selectable(net_cards[i].c_str(), is_selected)) {
+                    card_combo_name = net_cards[i];
+                    ImGui::SetItemDefaultFocus();
+                }   
+            }
+        }
+        ImGui::EndCombo();
+    }
+}
 void ConnectionBar::DrawDbNr()
 {
     if(this_controller->CommMan->DataMan.get_db() != nullptr)
@@ -109,6 +127,7 @@ void ConnectionBar::DrawDbNr()
         }
     }
 }
+
 
 void ConnectionBar::Draw() {
 
@@ -129,9 +148,7 @@ void ConnectionBar::Draw() {
     
     static char buffer[256];
     
-    if (ImGui::InputText("Subnet", buffer, IM_ARRAYSIZE(buffer))) {
-        this_controller->CommMan->NetMan.set_subnet(buffer);
-    }
+
     
     ImVec2 curs = ImGui::GetCursorPos();
     
@@ -146,8 +163,6 @@ void ConnectionBar::Draw() {
     if( this_controller->CommMan->get_device_scope()!= nullptr  &&
         this_controller->CommMan->DataMan.get_db()!=nullptr )
         {
-            
-        
             if (ImGui::Button("Get Data")) 
                 this_controller->CommMan->get_plc_data();
             
@@ -194,7 +209,6 @@ void FilterBar::draw()
         return;
     }
 
-    // --- combo modalità ---
     ImGui::SetNextItemWidth(120);
     if (ImGui::BeginCombo("Filter by", mode_label(mode))) {
         auto pick = [&](Mode m){

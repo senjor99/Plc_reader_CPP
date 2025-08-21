@@ -1,10 +1,5 @@
 #include <hw_interface.hpp>
 
-
-std::vector<std::string> folders::extensions = {".db",".udt"};
-std::string folders::directory = "./root";
-
-
 void walk_dir(_folder_& dir, const std::string& path, std::string& f_path)
 {
     for (const auto& i : fs::directory_iterator(path))

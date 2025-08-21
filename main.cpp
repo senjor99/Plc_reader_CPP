@@ -2,7 +2,9 @@
 #include <gui.hpp>
 #include <GLFW/glfw3.h>
 #include <type_traits>
+#include <datatype.hpp>
 
+namespace fs = std::filesystem;
 
 void SetModernStyle()
 {
@@ -39,9 +41,11 @@ void SetModernStyle()
     
     style.WindowPadding     = ImVec2(12, 10);
 
-    ImGuiIO& io = ImGui::GetIO();
+    auto base = fs::current_path();  
+    fs::path fontPath = base / "font" / "Roboto-Regular.ttf";
 
-    ImFont* myFont = io.Fonts->AddFontFromFileTTF("./bin/linux/font/Roboto-Regular.ttf", 17.0f);
+    ImGuiIO& io = ImGui::GetIO();
+    ImFont* myFont = io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 17.0f);
     ImGui::PushFont(myFont);
 }
 

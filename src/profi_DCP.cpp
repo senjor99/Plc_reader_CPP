@@ -1,86 +1,226 @@
 #include <profi_DCP.hpp>
 #include <sys/types.h>
+#include <random>
+#include <cstdint>
+#include <stdexcept>
+#include <iphlpapi.h>
+
+#pragma comment(lib, "iphlpapi.lib")
+
+/*-------------------------------------------------------*/
+/*------------------ Class Pcap Client ------------------*/ 
+/*-------------------------------------------------------*/
 
 profinet::PcapClient::PcapClient()
-    :net_cards(new pcap_if_t),net_card(get_netCards()){}
+// Class constructor, just create the instance and rectruit network card information, storing them
+// it's necessary to know the network card for send and receive package 
+    : net_cards(_get_netCards()){};
 
-pcap_if_t profinet::PcapClient::get_netCards()
-{
+std::vector<std::string> profinet::PcapClient::_get_netCards()
+// Use the Pcap API to receive the network card as pcap_if_t, a pcap class, then you explore 
+// it by the score_interface function
+{   
+    pcap_if_t* pcap_cards = new pcap_if_t;
+
+    if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING,NULL,&pcap_cards,errbuf) != 0 || !pcap_cards)
+        throw std::runtime_error("No network device found\n");
+    std::vector<std::string> cards;
+    for (pcap_if_t* d = pcap_cards; d; d = d->next) 
+       net_cards.push_back(static_cast<std::string>(d->name));
     
-    if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING,NULL,&net_cards,errbuf) != 0 || !net_cards)
-        throw std::runtime_error("No netword device found\n");
-
-    pcap_if_t* best = nullptr; int bestScore = INT_MIN;
-    for (pcap_if_t* d = net_cards; d; d = d->next) {
-        int s = score_interface(d);
-        if (s > bestScore) { bestScore = s; best = d; }
-    }
-    return *best;
+    pcap_freealldevs(pcap_cards);
+    return cards;
 };
 
-bool profinet::PcapClient::_SendPackage()
+std::string profinet::PcapClient::extract_guid() 
 {
-    u_char dcp_req[60] ;
-    profinet::package_helper(dcp_req,60);
+//
+//
+    if (net_card == "") return {};
+    const char* n = net_card.c_str();
+    const char* lb = std::strchr(n, '{');
+    const char* rb = lb ? std::strchr(lb, '}') : nullptr;
+    if (!lb || !rb || rb <= lb) return {};
+    return std::string(lb, rb - lb + 1); 
+}
 
-    if(pcap_sendpacket(handle,dcp_req,60)!=0)
-        std::cerr<<"No packed has been sent for general reason\n";
+std::array<uint8_t,6> profinet::PcapClient::_get_mac()
+//
+//
+{
+    if (net_card == "") throw std::exception("WARNING no network card found");
+
+    std::string guid = extract_guid();
+    if (guid.empty()) throw std::exception("WARNING no GUID could be found on the network card");
+
+    ULONG bufLen = 16 * 1024;
+    std::vector<unsigned char> buf(bufLen);
+    IP_ADAPTER_ADDRESSES* aa = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(buf.data());
+
+    DWORD ret = GetAdaptersAddresses(AF_UNSPEC,
+                                     GAA_FLAG_SKIP_ANYCAST |
+                                     GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_MULTICAST,
+                                     nullptr, aa, &bufLen);
+    if (ret == ERROR_BUFFER_OVERFLOW) {
+        buf.resize(bufLen);
+        aa = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(buf.data());
+        ret = GetAdaptersAddresses(AF_UNSPEC,
+                                   GAA_FLAG_SKIP_ANYCAST |
+                                   GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_MULTICAST,
+                                   nullptr, aa, &bufLen);
+    }
+    if (ret != NO_ERROR) throw std::exception("WARNING MAC Addres not found on the network card");
+
+
+    for (IP_ADAPTER_ADDRESSES* it = aa; it; it = it->Next) {
+        if (!it->AdapterName) continue;
+        if (guid == it->AdapterName) {
+            if (it->PhysicalAddressLength >= 6) {
+                std::array<uint8_t,6> mac{};
+                std::memcpy(mac.data(), it->PhysicalAddress, 6);
+                return mac;
+            }
+        }
+    }
+    throw std::exception("WARNING MAC Addres search got no results");
+}
+ 
+void profinet::PcapClient::identifyAll()
+// Internal class of the client, it get the package, build it with the package_helper, send it and wait for an answer 
+// process the answers and store them in the internal variable packages, a list who must need to be popped by the outside program 
+{   
+    
+    const char* card = net_card.c_str();
+    live_process = pcap_open_live(card,65535,0,500,errbuf);
+    _set_filter(live_process);
+
+    auto tmp = packageHelper::build_DCP(&mac_addr);
+    u_char* dcp_req = reinterpret_cast<u_char*>(tmp.data());
+    int len = tmp.size();
+    
+    if(pcap_sendpacket(live_process,dcp_req,len)==PCAP_ERROR ) 
+        std::cerr<<"No packed has been sent for general reason"<< pcap_geterr(live_process)<<"\n";
     else
-        
-        _waitAnswer()
-
+    {   
+        u_char x[] = "netsurfer";
+        int pkg_nr;
+        pcap_handler callback;
+        while(pkg_nr <10)
+        {
+            pkg_nr = pcap_loop(live_process, -1, callback , x);
+        }
+        pcap_breakloop(live_process);
+        _package_process(x,&callback);
+    }
+    pcap_close(live_process);
 };
 
-bool profinet::PcapClient::_waitAnswer()
+std::vector<std::string> profinet::PcapClient::get_cards(){ return net_cards;}
+void profinet::PcapClient::set_card(std::string in){ net_card = in;}
+
+void profinet::PcapClient:: _set_filter(pcap_t* process)
 {
-    handle = pcap_open_live(net_card.name,65535,0,500,errbuf);
-    if(handle != NULL)
+    bpf_program prg{};
+    const char* filter= "ether proto 0x8892";
+    
+    if (pcap_compile(process, &prg, filter, 1, netmask) != PCAP_ERROR )
     {
-        _package_process(handle)
-        return true;
+        if(pcap_setfilter(process, &prg) == PCAP_ERROR ) std::cerr<<"Error raiser on network filter"<< pcap_geterr(process)<<"\n";
     }
-    else return false;
+    else std::cerr<<"Something wrong in the network filter"<< pcap_geterr(process)<<"\n";
+    pcap_freecode(&prg);
 }
-void profinet::PcapClient::_package_process()
+
+void profinet::PcapClient::_package_process(u_char *user,pcap_handler* handler)
+//
+//
 {
+
+}
+
+/*-------------------------------------------------------*/
+/*---------------- Class Package builder ----------------*/ 
+/*-------------------------------------------------------*/
+
+std::array<uint8_t,60> packageHelper::build_DCP(std::array<uint8_t,6>* mac_address)
+//
+//
+{
+    std::array<uint8_t,frame_len> frame{};
+    int idx=0;
+
+    _build_ETH_header(frame,idx,mac_address);
+    _build_DCP_header(frame,idx);
+    _build_DCP_message(frame,idx);
+    for(int i = idx;i<frame_len;i++) frame[i]=0x00;
+
+    return frame;
+}
+
+void packageHelper::_build_ETH_header(std::array<uint8_t,frame_len>& frame,int& idx,std::array<uint8_t,6>* mac_address)
+//
+//
+{
+    // Destination MAC ADDRESS FF:FF:FF::FF per broadcast
+    frame[idx++] = 0xff; frame[idx++] = 0xff;
+    frame[idx++] = 0xff; frame[idx++] = 0xff; 
+    frame[idx++] = 0xff; frame[idx++] = 0xff;
+
+    // Requester MAC ADDRESS
+    for(auto i : *mac_address) frame[idx++] = i;
+    
+    // EtherType
+    frame[idx++] = 0x88;
+    frame[idx++] = 0x92;
+}
+
+void packageHelper::_build_DCP_header(std::array<uint8_t,frame_len>& frame,int& idx)
+//
+//
+{
+    srand(static_cast<unsigned>(time(nullptr))); // seed basato sul tempo
+    
+    // Frame ID
+    frame[idx++] = 0xfe; frame[idx++] = 0xfe;
+
+    // Service ID           //Service Type
+    frame[idx++] = 0x05;    frame[idx++] = 0x00;
+    
+    // Transaction ID
+    for(int i =0;i>4;i++)
+    {
+        int n = rand() % 10;
+        frame[idx++] = static_cast<uint8_t>(n & 0xFF);;
+    } 
+
+    // ResponseDelay
+    frame[idx++] = 0x00; frame[idx++] = 0x00;
+    
+    // DCPDataLength
+    frame[idx++] = 0x00;frame[idx++] = 0x04;
+
+}
+
+void packageHelper::_build_DCP_message(std::array<uint8_t,frame_len>& frame,int& idx)
+//
+//
+{
+    // Options              // Suboption            // Blocklen
+    frame[idx++] = 0xff;    frame[idx++] = 0xff;    frame[idx++] = 0xff; 
     
 }
 
-void profinet::PcapClient::_package_build()
+int score_interface(pcap_if_t* d) 
+//
+//
 {
-    profinet::package_helper();
-    pcap_open(pcap_t *p);
-    pcap_compile();
-    pcap_close(pcap_t *p);
-}
-
-void profinet::package_helper(u_char* a,int len)
-{
-    u_char res;
-     profinet::_build_header(res);
-     profinet::_build_message(res);
-    
-    return res;
-}
-
-void profinet::_build_header(u_char* a,int len)
-{
-    pcap_pkthdr header;
-}
-
-void profinet::_build_message(u_char* a,int len)
-{
-    
-}
-
-int score_interface(pcap_if_t* d) {
     // Hard exclude
     if (d->flags & PCAP_IF_LOOPBACK) return INT_MIN/2;
     if (profinet::looks_loopback(d) || profinet::looks_virtual_or_vpn(d)) return INT_MIN/2;
 
     int s = 0;
-    if (profinet::looks_wifi(d)) s -= 2;         // preferisci non-wifi
-    if (profinet::has_ipv4(d)) s += 2;           // segnale di attività
+    if (profinet::looks_wifi(d)) s -= 2;         
+    if (profinet::has_ipv4(d)) s += 2;          
     // bonus parole “buone”
     std::string desc = d->description ? d->description : "";
     if (desc.find("Ethernet") != std::string::npos) s += 2;
@@ -96,71 +236,3 @@ int score_interface(pcap_if_t* d) {
 
     return s;
 }
-
-/*
-pcap_if_t        // lista interfacce
-pcap_t           // handle verso l'interfaccia
-struct pcap_pkthdr {   // header pacchetto ricevuto
-    struct timeval ts;
-    bpf_u_int32 caplen;
-    bpf_u_int32 len;
-};
-
-
-pcap_t *pcap_open_live(
-    const char *device,   // nome interfaccia
-    int snaplen,          // max bytes da catturare (es. 65535)
-    int promisc,          // 1 = promiscuous
-    int to_ms,            // timeout in ms
-    char *errbuf
-);
-
-
-int pcap_sendpacket(
-    pcap_t *p,
-    const u_char *buf,    // puntatore al pacchetto
-    int size              // lunghezza pacchetto
-);
-
-const u_char *pcap_next(
-    pcap_t *p,
-    struct pcap_pkthdr *h
-);
-
-int pcap_next_ex(
-    pcap_t *p,
-    struct pcap_pkthdr **pkt_header,
-    const u_char **pkt_data
-);
-
-int pcap_compile(
-    pcap_t *p,
-    struct bpf_program *fp,
-    const char *str,
-    int optimize,
-    bpf_u_int32 netmask
-);
-
-int pcap_setfilter(pcap_t *p, struct bpf_program *fp);
-
-char *s(char *errbuf);
-int pcap_lookupnet(
-    const char *device,
-    bpf_u_int32 *netp,
-    bpf_u_int32 *maskp,
-    char *errbuf
-);
-
-const char *pcap_geterr(pcap_t *p);
-
-char *pcap_lookupdev(char *errbuf);
-int pcap_lookupnet(
-    const char *device,
-    bpf_u_int32 *netp,
-    bpf_u_int32 *maskp,
-    char *errbuf
-);
-
-const char *pcap_geterr(pcap_t *p);
-
-*/

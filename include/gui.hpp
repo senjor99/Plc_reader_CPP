@@ -34,7 +34,8 @@ class DrawingInfo
 class ConnectionBar{
 protected:
     MainGUIController* this_controller;
-    std::string device_combo_name ="Select device";
+    std::string device_combo_name ="Select Device";
+    std::string card_combo_name = "Select Adapter";
 public:
     ConnectionBar() = default;
     ConnectionBar(MainGUIController* controller);
@@ -45,6 +46,7 @@ public:
     void Draw();
     void DrawDeviceCombo();
     void DrawDbNr();
+    void DrawNetCardCombo();
     void add_db();
 };
 

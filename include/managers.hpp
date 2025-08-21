@@ -24,7 +24,8 @@ class NetManager {
         std::map<std::string,std::shared_ptr<DeviceProfInfo>> get_devices_map()const;
         std::shared_ptr<DeviceProfInfo> get_device_from_devices(std::string device_name);
         std::string get_subnet();
-        
+        std::vector<std::string> get_netCards();
+
         bool set_device_scope(std::string key);
         void set_subnet(std::string sub);
         void plc_data_retrieve(int db_nr,int size,std::vector<unsigned char>* buffer);

@@ -11,10 +11,13 @@ if (WIN32)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/win)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/win)
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/win)
+  set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/linux)
+
 elseif (UNIX AND NOT APPLE)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/linux)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/linux)
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/linux)
+  set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/linux)
 endif()
 
 if (MSVC)
@@ -40,7 +43,7 @@ add_executable(plc_reader
   src/hw_interface.cpp
   src/managers.cpp
   src/parser.cpp
-  src/profi_DCP.cpp
+  #src/profi_DCP.cpp
 )
 
 target_include_directories(plc_reader PRIVATE
@@ -203,13 +206,34 @@ endif()
 # ------------------------------
 add_custom_command(TARGET plc_reader POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:plc_reader>/font"
-  #COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:plc_reader>/instances"
+
   COMMAND ${CMAKE_COMMAND} -E copy_directory
           "${CMAKE_SOURCE_DIR}/font" "$<TARGET_FILE_DIR:plc_reader>/font"
-  #COMMAND ${CMAKE_COMMAND} -E copy_directory
-          #"${CMAKE_SOURCE_DIR}/instances" "$<TARGET_FILE_DIR:plc_reader>/instances"
+
   COMMENT "Copia font/ e instances/ vicino all'eseguibile"
+  )
+add_custom_command(TARGET plc_reader POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+            "$<TARGET_FILE_DIR:plc_reader>/root"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/root"
+            "$<TARGET_FILE_DIR:plc_reader>/root"
+    COMMENT "Copying assets next to the executable"
 )
+# ------------------------------
+# 7) Copia risorse accanto all'eseguibile
+# ------------------------------
+
+  add_custom_command(TARGET plc_reader POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "C:/mingw64/bin/libstdc++-6.dll" "$<TARGET_FILE_DIR:plc_reader>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "C:/mingw64/bin/libgcc_s_seh-1.dll" "$<TARGET_FILE_DIR:plc_reader>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "C:/mingw64/bin/libwinpthread-1.dll" "$<TARGET_FILE_DIR:plc_reader>"
+  )
+
+file(COPY "${CMAKE_SOURCE_DIR}/root" DESTINATION "${BIN_DIR}")
 
 # Copia snap7.dll accanto all'exe su Windows (se presente)
 if (WIN32 AND WITH_SNAP7)
