@@ -2,28 +2,22 @@
 #include <classes.hpp>
 #include <hw_interface.hpp>
 #include <action.hpp>
-
+#include <thread>
 // class NetManager 
 /*
 
 */
+NetManager::NetManager(){network = std::make_shared<profinet::PcapClient>();}
+
+std::map<std::string,std::string> NetManager::get_netCards(){return network->get_cards();}
+
 std::vector<std::string> NetManager::get_devices_keys()const{return devices_keys;}
 
 std::shared_ptr<DeviceProfInfo> NetManager::get_device_scope(){return device_scope;}
 
 std::map<std::string,std::shared_ptr<DeviceProfInfo>> NetManager::get_devices_map()const{return devices;}
 
-std::string NetManager::get_subnet(){return subnet;}
-
-void NetManager::scan_network(){ 
-    std::cout<<"Manager Getting Devices"<<"\n";
-    //devices= ethernet::get_devices(subnet);
-    devices_keys.clear();
-    devices_keys.push_back("--None--");
-    for(auto i : devices){
-        devices_keys.push_back(i.first);
-    }
-}
+void NetManager::scan_network(){network->identifyAll();}
 
 std::shared_ptr<DeviceProfInfo> NetManager::get_device_from_devices(std::string device_name){
     if(auto it= devices.find(device_name); it != devices.end()){
@@ -32,7 +26,6 @@ std::shared_ptr<DeviceProfInfo> NetManager::get_device_from_devices(std::string 
     else return nullptr;
 }
 
-void NetManager::set_subnet(std::string sub){subnet = sub;}
 
 bool NetManager::set_device_scope(std::string key){
     if(auto it= devices.find(key); it != devices.end()){
@@ -65,6 +58,8 @@ bool NetManager::plc_data_send(int db_nr,int size,std::vector<unsigned char> buf
     else{return false;}
     Client.Disconnect();
 }
+
+void NetManager::set_netCard(std::string card){network->set_card(card);};
 
 // class NetManager 
 

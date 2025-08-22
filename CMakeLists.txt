@@ -43,13 +43,18 @@ add_executable(plc_reader
   src/hw_interface.cpp
   src/managers.cpp
   src/parser.cpp
-  #src/profi_DCP.cpp
+  src/profi_DCP.cpp
 )
 
 target_include_directories(plc_reader PRIVATE
   ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_SOURCE_DIR}/external/pcap
+  ${CMAKE_SOURCE_DIR}/external/pcap/pcap
+
 )
+target_link_libraries(plc_reader PRIVATE
+    ws2_32
+    iphlpapi)
 
 # ------------------------------
 # 4) Snap7
@@ -106,9 +111,11 @@ if (WITH_SNAP7)
 
   if (WIN32)
     set(NPCAP_DIR ${CMAKE_SOURCE_DIR}/external/pcap)
-    find_library(NPCAP_LIB NAMES wpcap Packet PATHS ${NPCAP_DIR}/Lib )
+    find_library(NPCAP_LIB NAMES wpcap Packet PATHS ${NPCAP_DIR}/Lib/x64 )
     if(NPCAP_LIB)
-      target_link_libraries(plc_reader PRIVATE ${NPCAP_LIB})
+    set(NPCAP_LIB_FOLDER ${NPCAP_DIR}/Lib/x64)
+      target_link_libraries(plc_reader PRIVATE ${NPCAP_LIB_FOLDER}/Packet.lib)
+      target_link_libraries(plc_reader PRIVATE ${NPCAP_LIB_FOLDER}/wpcap.lib)
       message("-- Npcap library linked correctly")
     else()
       message(WARNING "Npcap lib not found")
@@ -201,6 +208,7 @@ if (WITH_TAO)
   endif()
 endif()
 
+
 # ------------------------------
 # 7) Copia risorse accanto all'eseguibile
 # ------------------------------
@@ -245,7 +253,7 @@ if (WIN32 AND WITH_SNAP7)
       COMMENT "Copia snap7.dll vicino all'eseguibile")
     endif()
 endif()
-
+    
 # ------------------------------
 # 8) RPATH (Linux)
 # ------------------------------

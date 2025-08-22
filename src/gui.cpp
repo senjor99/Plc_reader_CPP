@@ -80,7 +80,7 @@ void ConnectionBar::DrawDeviceCombo()
     std::shared_ptr<DeviceProfInfo> device_scope = this_controller->CommMan->get_device_scope();
     std::map<std::string,std::shared_ptr<DeviceProfInfo>> device_map = this_controller->CommMan->get_devices_map(); 
 
-    if (ImGui::BeginCombo("", device_combo_name.c_str())) {
+    if (ImGui::BeginCombo("Device", device_combo_name.c_str())) {
         if(!device_keys.empty())   
         { 
             for (int i = 0; i < device_keys.size(); ++i) {
@@ -98,15 +98,17 @@ void ConnectionBar::DrawDeviceCombo()
 
 void ConnectionBar::DrawNetCardCombo()
 {
-    std::vector<std::string> net_cards = this_controller->CommMan->NetMan.get_netCards();
+    std::map<std::string,std::string> net_cards = this_controller->CommMan->NetMan.get_netCards();
 
-    if (ImGui::BeginCombo("", card_combo_name.c_str())) {
+    if (ImGui::BeginCombo("Adapter", card_combo_name.c_str())) {
         if(!net_cards.empty())   
         { 
-            for (int i = 0; i < net_cards.size(); ++i) {
-                bool is_selected = (card_combo_name ==  net_cards[i]);
-                if (ImGui::Selectable(net_cards[i].c_str(), is_selected)) {
-                    card_combo_name = net_cards[i];
+            for (auto i : net_cards) {
+                bool is_selected = (card_combo_name ==  i.first);
+                
+                if (ImGui::Selectable(i.first.c_str(), is_selected)) {
+                    this_controller->CommMan->NetMan.set_netCard(i.second);
+                    card_combo_name = i.first;
                     ImGui::SetItemDefaultFocus();
                 }   
             }
@@ -146,10 +148,12 @@ void ConnectionBar::Draw() {
     ImGui::SameLine();
     ImGui::SetNextItemWidth(200);
     
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(200);
+    DrawNetCardCombo();
+    
+    
     static char buffer[256];
-    
-
-    
     ImVec2 curs = ImGui::GetCursorPos();
     
     ImGui::SameLine();

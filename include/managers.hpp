@@ -3,19 +3,21 @@
 #include "datatype.hpp"
 #include <memory>
 #include <classes.hpp>
+#include <profi_DCP.hpp>
 
 class NetManager {
     protected:
         std::map<std::string,std::shared_ptr<DeviceProfInfo>> devices;
         std::vector<std::string> devices_keys;
         std::shared_ptr<DeviceProfInfo> device_scope = nullptr;
+        std::shared_ptr<profinet::PcapClient> network;
         std::string subnet;
 
     private:    
         TS7Client Client;
   
     public:
-        NetManager() = default;   
+        NetManager();   
 
         void scan_network();
 
@@ -23,13 +25,12 @@ class NetManager {
         std::shared_ptr<DeviceProfInfo> get_device_scope();
         std::map<std::string,std::shared_ptr<DeviceProfInfo>> get_devices_map()const;
         std::shared_ptr<DeviceProfInfo> get_device_from_devices(std::string device_name);
-        std::string get_subnet();
-        std::vector<std::string> get_netCards();
+        std::map<std::string,std::string> get_netCards();
 
         bool set_device_scope(std::string key);
-        void set_subnet(std::string sub);
         void plc_data_retrieve(int db_nr,int size,std::vector<unsigned char>* buffer);
         bool plc_data_send(int db_nr,int size,std::vector<unsigned char> buffer ) ;
+        void set_netCard(std::string card);
 };
 
 class DatabaseManager {

@@ -1,6 +1,14 @@
-#include <pcap.h>
-#include "misc.h"
+#pragma once
+
 #include <datatype.hpp>
+#include <random>
+#include <cstdint>
+#include <stdexcept>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
+#include <pcap.h>
+
 
 namespace profinet
 {
@@ -16,6 +24,21 @@ namespace profinet
         static DCP_Device create(std::map<std::string,std::string> dev);
     };
 
+    class Sniffer {
+    public:
+        void start(pcap_t* handle);
+        size_t get_packet_nr();
+        Sniffer() =default;
+
+    private:
+        static void pcap_cb(u_char* user, const pcap_pkthdr* h, const u_char* bytes) ;
+
+        void onPacket(const pcap_pkthdr* h, const u_char* bytes) ;
+
+        pcap_t* handle_ = nullptr;
+        size_t  packets_ = 0;
+    };
+
     class PcapClient
     {
         private:
@@ -27,23 +50,24 @@ namespace profinet
             pcap_handler handler;
             bpf_u_int32 netmask;
             std::string net_card = "";
-            std::vector<std::string> net_cards;
+            std::map<std::string,std::string> net_cards;
             std::array<uint8_t,6> mac_addr{};
-            
+            std::optional<std::vector<profinet::DCP_Device>> devices;
+
             char errbuf[PCAP_ERRBUF_SIZE];
             
-            std::vector<std::string> _get_netCards();
+            std::map<std::string,std::string> _get_netCards();
             std::string extract_guid();
             std::array<uint8_t,6> _get_mac();
-            bool _SendPackage();
-            void _package_process(u_char *user,pcap_handler* handler);
+            void _package_process(u_char* user, const pcap_pkthdr* h, const u_char* bytes);
             void _set_filter(pcap_t* process);
 
             public:
             PcapClient();
             ~PcapClient()=default;
-            void identifyAll();
-            std::vector<std::string> get_cards();
+            int identifyAll();
+            std::optional<std::vector<profinet::DCP_Device>> get_devices();
+            std::map<std::string,std::string> get_cards();
             void set_card(std::string in);
     };
 
@@ -53,10 +77,6 @@ namespace profinet
         int score;
     };
 
-    bool looks_loopback(const pcap_if_t* d);
-    bool looks_virtual_or_vpn(const pcap_if_t* d);
-    bool looks_wifi(const pcap_if_t* d);
-    bool has_ipv4(const pcap_if_t* d);
 };
 
 class packageHelper
