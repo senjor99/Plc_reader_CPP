@@ -50,9 +50,7 @@ void SetModernStyle()
 }
 
 int main() {
- 
     if (!glfwInit()) return -1;
-
     GLFWwindow* window = glfwCreateWindow(1280, 720, "PLC-Reader", NULL, NULL);
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
@@ -62,12 +60,11 @@ int main() {
 
     ImGuiIO& io = ImGui::GetIO();
     SetModernStyle();
-
+    
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
-
+    
     MainGUIController main;
-
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -75,7 +72,6 @@ int main() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
         ImGui::Begin("MainWindow", nullptr,window_type::blank_);

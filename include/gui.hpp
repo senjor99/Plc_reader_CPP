@@ -37,7 +37,7 @@ protected:
     std::string device_combo_name ="Select Device";
     std::string card_combo_name = "Select Adapter";
 public:
-    ConnectionBar() = default;
+    ConnectionBar()=default ;
     ConnectionBar(MainGUIController* controller);
 
     std::string get_device_combo_name();
@@ -78,7 +78,7 @@ class FilterBar {
 
 class Body {
 public:
-    Body() = default;
+    Body()=default;
     Body(MainGUIController* main);
     void Draw_node(const VariantElement& element,int&depth_in);
     void Draw_Explorer();

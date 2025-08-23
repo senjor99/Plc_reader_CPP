@@ -1,6 +1,34 @@
-# Git library
-/external/glad
-/external/glfw
-/external/imgui
-/external/PEGTL
-/external/snap7
+# Build outputs
+/build/
+/bin/
+/CMakeFiles/
+/CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# External dependencies (vendored repos)
+external/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Logs & temp
+*.log
+log.txt
+
+# ImGui config
+imgui.ini
+
+# Python helpers (if any)
+__pycache__/
+*.pyc
+.venv/

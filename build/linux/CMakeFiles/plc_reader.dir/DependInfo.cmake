@@ -22,6 +22,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/denis/Projects/Plc_reader_CPP/src/hw_interface.cpp" "CMakeFiles/plc_reader.dir/src/hw_interface.cpp.o" "gcc" "CMakeFiles/plc_reader.dir/src/hw_interface.cpp.o.d"
   "/home/denis/Projects/Plc_reader_CPP/src/managers.cpp" "CMakeFiles/plc_reader.dir/src/managers.cpp.o" "gcc" "CMakeFiles/plc_reader.dir/src/managers.cpp.o.d"
   "/home/denis/Projects/Plc_reader_CPP/src/parser.cpp" "CMakeFiles/plc_reader.dir/src/parser.cpp.o" "gcc" "CMakeFiles/plc_reader.dir/src/parser.cpp.o.d"
+  "/home/denis/Projects/Plc_reader_CPP/src/profi_DCP.cpp" "CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o" "gcc" "CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

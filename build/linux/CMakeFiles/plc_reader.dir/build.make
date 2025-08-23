@@ -153,19 +153,19 @@ CMakeFiles/plc_reader.dir/src/parser.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/plc_reader.dir/src/parser.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/denis/Projects/Plc_reader_CPP/src/parser.cpp -o CMakeFiles/plc_reader.dir/src/parser.cpp.s
 
-CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o: CMakeFiles/plc_reader.dir/flags.make
-CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o: /home/denis/Projects/Plc_reader_CPP/external/snap7/release/wrappers/c-cpp/snap7.cpp
-CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o: CMakeFiles/plc_reader.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/denis/Projects/Plc_reader_CPP/build/linux/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o -MF CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o.d -o CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o -c /home/denis/Projects/Plc_reader_CPP/external/snap7/release/wrappers/c-cpp/snap7.cpp
+CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o: CMakeFiles/plc_reader.dir/flags.make
+CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o: /home/denis/Projects/Plc_reader_CPP/src/profi_DCP.cpp
+CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o: CMakeFiles/plc_reader.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/denis/Projects/Plc_reader_CPP/build/linux/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o -MF CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o.d -o CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o -c /home/denis/Projects/Plc_reader_CPP/src/profi_DCP.cpp
 
-CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/denis/Projects/Plc_reader_CPP/external/snap7/release/wrappers/c-cpp/snap7.cpp > CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.i
+CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/denis/Projects/Plc_reader_CPP/src/profi_DCP.cpp > CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.i
 
-CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/denis/Projects/Plc_reader_CPP/external/snap7/release/wrappers/c-cpp/snap7.cpp -o CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.s
+CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/denis/Projects/Plc_reader_CPP/src/profi_DCP.cpp -o CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.s
 
 CMakeFiles/plc_reader.dir/external/imgui/imgui.cpp.o: CMakeFiles/plc_reader.dir/flags.make
 CMakeFiles/plc_reader.dir/external/imgui/imgui.cpp.o: /home/denis/Projects/Plc_reader_CPP/external/imgui/imgui.cpp
@@ -265,6 +265,20 @@ CMakeFiles/plc_reader.dir/external/glad/src/gl.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/plc_reader.dir/external/glad/src/gl.c.s"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/denis/Projects/Plc_reader_CPP/external/glad/src/gl.c -o CMakeFiles/plc_reader.dir/external/glad/src/gl.c.s
 
+CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o: CMakeFiles/plc_reader.dir/flags.make
+CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o: /home/denis/Projects/Plc_reader_CPP/external/snap7/release/wrappers/c-cpp/snap7.cpp
+CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o: CMakeFiles/plc_reader.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/denis/Projects/Plc_reader_CPP/build/linux/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o -MF CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o.d -o CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o -c /home/denis/Projects/Plc_reader_CPP/external/snap7/release/wrappers/c-cpp/snap7.cpp
+
+CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/denis/Projects/Plc_reader_CPP/external/snap7/release/wrappers/c-cpp/snap7.cpp > CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.i
+
+CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/denis/Projects/Plc_reader_CPP/external/snap7/release/wrappers/c-cpp/snap7.cpp -o CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.s
+
 # Object files for target plc_reader
 plc_reader_OBJECTS = \
 "CMakeFiles/plc_reader.dir/main.cpp.o" \
@@ -273,14 +287,15 @@ plc_reader_OBJECTS = \
 "CMakeFiles/plc_reader.dir/src/hw_interface.cpp.o" \
 "CMakeFiles/plc_reader.dir/src/managers.cpp.o" \
 "CMakeFiles/plc_reader.dir/src/parser.cpp.o" \
-"CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o" \
+"CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o" \
 "CMakeFiles/plc_reader.dir/external/imgui/imgui.cpp.o" \
 "CMakeFiles/plc_reader.dir/external/imgui/imgui_draw.cpp.o" \
 "CMakeFiles/plc_reader.dir/external/imgui/imgui_tables.cpp.o" \
 "CMakeFiles/plc_reader.dir/external/imgui/imgui_widgets.cpp.o" \
 "CMakeFiles/plc_reader.dir/external/imgui/backends/imgui_impl_glfw.cpp.o" \
 "CMakeFiles/plc_reader.dir/external/imgui/backends/imgui_impl_opengl3.cpp.o" \
-"CMakeFiles/plc_reader.dir/external/glad/src/gl.c.o"
+"CMakeFiles/plc_reader.dir/external/glad/src/gl.c.o" \
+"CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o"
 
 # External object files for target plc_reader
 plc_reader_EXTERNAL_OBJECTS =
@@ -291,7 +306,7 @@ plc_reader_EXTERNAL_OBJECTS =
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/src/hw_interface.cpp.o
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/src/managers.cpp.o
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/src/parser.cpp.o
-/home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o
+/home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/external/imgui/imgui.cpp.o
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/external/imgui/imgui_draw.cpp.o
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/external/imgui/imgui_tables.cpp.o
@@ -299,17 +314,21 @@ plc_reader_EXTERNAL_OBJECTS =
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/external/imgui/backends/imgui_impl_glfw.cpp.o
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/external/imgui/backends/imgui_impl_opengl3.cpp.o
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/external/glad/src/gl.c.o
+/home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/external/snap7/release/wrappers/c-cpp/snap7.cpp.o
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/build.make
-/home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: /home/denis/Projects/Plc_reader_CPP/external/snap7/build/bin/linux/libsnap7.so
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: /usr/lib/x86_64-linux-gnu/libglfw.so.3.3
+/home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: /home/denis/Projects/Plc_reader_CPP/external/snap7/build/bin/linux/libsnap7.so
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: /usr/lib/x86_64-linux-gnu/libGLX.so
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: /usr/lib/x86_64-linux-gnu/libOpenGL.so
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/denis/Projects/Plc_reader_CPP/build/linux/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Linking CXX executable /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/denis/Projects/Plc_reader_CPP/build/linux/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Linking CXX executable /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/plc_reader.dir/link.txt --verbose=$(VERBOSE)
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold "Copia font/ e instances/ vicino all'eseguibile"
 	/usr/bin/cmake -E make_directory /home/denis/Projects/Plc_reader_CPP/bin/linux/font
 	/usr/bin/cmake -E copy_directory /home/denis/Projects/Plc_reader_CPP/font /home/denis/Projects/Plc_reader_CPP/bin/linux/font
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold "Copying assets next to the executable"
+	/usr/bin/cmake -E make_directory /home/denis/Projects/Plc_reader_CPP/bin/linux/root
+	/usr/bin/cmake -E copy_directory /home/denis/Projects/Plc_reader_CPP/root /home/denis/Projects/Plc_reader_CPP/bin/linux/root
 
 # Rule to build all files generated by this target.
 CMakeFiles/plc_reader.dir/build: /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader

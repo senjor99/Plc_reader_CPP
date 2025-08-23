@@ -29,6 +29,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/plc_reader.dir/src/managers.cpp.o.d"
   "CMakeFiles/plc_reader.dir/src/parser.cpp.o"
   "CMakeFiles/plc_reader.dir/src/parser.cpp.o.d"
+  "CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o"
+  "CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o.d"
 )
 
 # Per-language clean rules from dependency scanning.

@@ -1,9 +1,17 @@
-#!/bin/bash
-rem Reinitialize the build and compile it
+#!/usr/bin/env bash
+set -euo pipefail
+
+clear
 echo "Hello from my script!"
 
-cls
-cmake -S . -B build/linux -D WITH_TAO=ON -D WITH_SNAP7=ON -D BUILD_GUI=ON
-cmake --build build/linux -j
-bin\linux\plc_reader
-pause
+BUILD_DIR=build/linux
+BIN_DIR=bin/linux
+
+cmake -S . -B "$BUILD_DIR" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_GUI=ON -DWITH_SNAP7=ON -WITH_TAO=ON
+
+cmake --build "$BUILD_DIR" -j
+
+$BIN_DIR/plc_reader
+

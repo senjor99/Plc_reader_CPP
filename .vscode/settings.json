@@ -82,6 +82,8 @@
         "xutility": "cpp",
         "*.rh": "cpp",
         "thread": "cpp",
-        "stop_token": "cpp"
+        "stop_token": "cpp",
+        "semaphore": "cpp",
+        "span": "cpp"
     }
 }

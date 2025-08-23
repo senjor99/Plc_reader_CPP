@@ -465,6 +465,30 @@ src/parser.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/plc_reader.dir/build.make CMakeFiles/plc_reader.dir/src/parser.cpp.s
 .PHONY : src/parser.cpp.s
 
+src/profi_DCP.o: src/profi_DCP.cpp.o
+.PHONY : src/profi_DCP.o
+
+# target to build an object file
+src/profi_DCP.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/plc_reader.dir/build.make CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o
+.PHONY : src/profi_DCP.cpp.o
+
+src/profi_DCP.i: src/profi_DCP.cpp.i
+.PHONY : src/profi_DCP.i
+
+# target to preprocess a source file
+src/profi_DCP.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/plc_reader.dir/build.make CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.i
+.PHONY : src/profi_DCP.cpp.i
+
+src/profi_DCP.s: src/profi_DCP.cpp.s
+.PHONY : src/profi_DCP.s
+
+# target to generate assembly for a file
+src/profi_DCP.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/plc_reader.dir/build.make CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.s
+.PHONY : src/profi_DCP.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -516,6 +540,9 @@ help:
 	@echo "... src/parser.o"
 	@echo "... src/parser.i"
 	@echo "... src/parser.s"
+	@echo "... src/profi_DCP.o"
+	@echo "... src/profi_DCP.i"
+	@echo "... src/profi_DCP.s"
 .PHONY : help
 
 

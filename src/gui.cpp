@@ -2,10 +2,8 @@
 #include <managers.hpp>
 #include <classes.hpp>
 
-// class MainGuiController
-/*
-
-*/
+/// \brief Main GUI controller: owns top bar, body, comm manager, and filter bar.
+/// \details Initializes all UI components and the communication layer.
 MainGUIController::MainGUIController()
     :   upper_bar(std::make_unique<ConnectionBar>(this)),
         body(std::make_unique<Body>(this)),
@@ -13,11 +11,16 @@ MainGUIController::MainGUIController()
         _FilterBar(std::make_unique<FilterBar>(this))
         {};
 
+/// \brief Applies the current filter settings to the database view.
+/// \details Delegates to CommManager, which passes the filter to FilterManager.
 void MainGUIController::activate_filter()
 {
     CommMan->set_filter_mode(_FilterBar->get_filter_status());
 };
 
+/// \brief Lays out and draws the main UI: header, optional filter bar, and body.
+/// \details Creates a layout with margins, draws header and filter (if DB loaded),
+/// and then draws the file explorer and data viewer panes.
 void MainGUIController::draw()
 {
     ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -59,21 +62,20 @@ void MainGUIController::draw()
 
 };
 
-// class MainGuiController
-
-// class ConnectionBar
-/*
-
-*/
-
+/// \brief Connection bar: device selection, DB number, adapter, and actions.
+/// \param controller Owning MainGUIController for callbacks/data access.
 ConnectionBar::ConnectionBar(MainGUIController* controller)
     : this_controller(controller){};
 
     
+/// \brief Returns the label currently shown in the Device combo box.
 std::string ConnectionBar::get_device_combo_name(){ return device_combo_name;}
 
+/// \brief Sets the label used by the Device combo box.
 void ConnectionBar::set_device_combo_name(std::string in){ device_combo_name = in;}
 
+/// \brief Draws the Device combo for selecting the active PLC/device.
+/// \details Populates from CommManager’s device map; on selection updates scope.
 void ConnectionBar::DrawDeviceCombo()
 {
     std::vector<std::string> device_keys =this_controller->CommMan->get_devices_keys();
@@ -96,6 +98,8 @@ void ConnectionBar::DrawDeviceCombo()
     }
 }
 
+/// \brief Draws the Network Adapter combo for picking the capture/IO card.
+/// \details Reads available adapters from NetManager and updates the selection.
 void ConnectionBar::DrawNetCardCombo()
 {
     std::map<std::string,std::string> net_cards = this_controller->CommMan->NetMan.get_netCards();
@@ -116,6 +120,9 @@ void ConnectionBar::DrawNetCardCombo()
         ImGui::EndCombo();
     }
 }
+
+/// \brief Draws the input for DB number (default DB index).
+/// \details If a DB is loaded, allows editing the default DB number used for IO.
 void ConnectionBar::DrawDbNr()
 {
     if(this_controller->CommMan->DataMan.get_db() != nullptr)
@@ -123,7 +130,7 @@ void ConnectionBar::DrawDbNr()
         std::string lb = "DB NR";
         int db_nr = this_controller->CommMan->DataMan.get_db_default_number();
         ImGui::SetNextItemWidth(100);
-        if(ImGui::InputScalar(lb.c_str(),ImGuiDataType_S32,&db_nr,nullptr,nullptr),ImGuiInputTextFlags_CharsDecimal)
+        if(ImGui::InputScalar(lb.c_str(),ImGuiDataType_S32,&db_nr,nullptr,nullptr))
         {
             this_controller->CommMan->set_db_nr(&db_nr);
         }
@@ -131,6 +138,8 @@ void ConnectionBar::DrawDbNr()
 }
 
 
+/// \brief Renders the full connection bar: device, DB number, adapter, and buttons.
+/// \details Includes “Refresh Devices” and “Get Data” actions.
 void ConnectionBar::Draw() {
 
     ImGui::SameLine();
@@ -174,19 +183,18 @@ void ConnectionBar::Draw() {
 
 };
 
-// class ConnectionBar
-
-// class FilterBar
-/*
-
-*/
+/// \brief Filter bar controller: UI to select and apply filtering on the DB view.
+/// \param controller Owning MainGUIController.
 FilterBar::FilterBar(MainGUIController* controller)
     : this_controller(controller) {}
 
+/// \brief Toggles filter on/off and resets values when turning off.
 void FilterBar::activate(){ active = !active; }
 
+/// \brief Returns the current filter element (mode + optional name/value).
 Filter::filterElem FilterBar::get_filter_status() const { return f_el; }
     
+/// \brief Human-readable label for the current filter mode.
 const char* FilterBar::mode_label(Mode m) 
 {
     switch(m){
@@ -198,6 +206,8 @@ const char* FilterBar::mode_label(Mode m)
     return "";
 }
 
+/// \brief Draws the filter UI (mode picker, inputs) and applies the filter.
+/// \details When disabled, clears the filter; otherwise updates f_el and triggers apply.
 void FilterBar::draw()
 {
    
@@ -267,16 +277,15 @@ void FilterBar::draw()
     this_controller->activate_filter();
 }
 
-// class FilterBar
-
-// class Body
-/*
-
-*/
+/// \brief Main content body: explorer (projects/files) and DB viewer trees.
+/// \param main Owning MainGUIController.
 Body::Body(MainGUIController* main)
     :this_controller(main){};
 
 
+/// \brief Recursively draws a DB element (container or leaf) as an ImGui tree node.
+/// \param element Variant element to draw.
+/// \param depth_in Current recursion depth (incremented/decremented during traversal).
 void Body::Draw_node(const VariantElement& element,int& depth_in){
 
     std::visit([&](auto&& ptr) {
@@ -329,6 +338,8 @@ void Body::Draw_node(const VariantElement& element,int& depth_in){
     },element);
 }
 
+/// \brief Draws the left-hand explorer: buttons and directory tree.
+/// \details Uses CommManager to open DB files from the scanned “Projects” root.
 void Body::Draw_Explorer()
 {
     if (ImGui::Button("Add DB")) {
@@ -344,6 +355,8 @@ void Body::Draw_Explorer()
 
 }
 
+/// \brief Recursively renders a folder/file item in the explorer.
+/// \param el Folder or file variant; files offer an “Open” button to load a DB.
 void Body::Draw_DirectoryTree(const FileFolderVar& el)
 {
     if (std::holds_alternative<_folder_>(el))
@@ -377,6 +390,8 @@ void Body::Draw_DirectoryTree(const FileFolderVar& el)
     }  
 };
 
+/// \brief Lays out and renders the explorer pane and (if present) the DB viewer.
+/// \param db Optional DB pointer; when present, draws a second pane with its tree.
 void Body::Draw(const std::shared_ptr<DB>& db) {
     
     int depth;
