@@ -1,19 +1,12 @@
 
 #pragma once
 
-#include <datatype.hpp>
-#include <random>
-#include <cstdint>
-#include <stdexcept>
-#include <pcap.h>
-#include <cstring>
-
 #ifdef _WIN32
-    #define NOMINMAX
     #include <winsock2.h>
     #include <ws2tcpip.h>
     #include <iphlpapi.h>
-    #include <misc.h>
+    #include <pcap.h>
+
  
 #else
     #include <sys/types.h>
@@ -25,7 +18,17 @@
     #include <errno.h>
     #include <ifaddrs.h>
     #include <net/if.h>
+    #include <pcap.h>
 #endif
+
+#include <datatype.hpp>
+#include <random>
+#include <cstdint>
+#include <stdexcept>
+#include <cstring>
+#include <cstdlib> 
+#include <ctime>
+
 /**
  * @brief Profinet DCP discovery and packet utilities.
  * @details
@@ -61,7 +64,7 @@ namespace profinet
         /// @param len Captured length in bytes.
         /// @param package Pointer to the full L2 frame buffer.
         /// @return Parsed device (may have only partial fields set).
-        static DCP_Device create(int len,u_char package);
+        static DCP_Device create(int len,const u_char* package);
         
         /// @brief Heuristic: whether this device looks like a PLC.
         /// @return true if Family contains "plc" (case-insensitive) or key fields are present.
@@ -118,6 +121,7 @@ namespace profinet
         std::string net_card = "";
         std::map<std::string,std::string> net_cards;
         std::array<uint8_t,6> mac_addr{};
+        std::array<uint8_t,4> XID{};
         std::optional<std::vector<profinet::DCP_Device>> devices;
 
         char errbuf[PCAP_ERRBUF_SIZE];
@@ -176,7 +180,8 @@ namespace profinet
 class packageHelper
 {
     /*
-    [ Ethernet ]
+    [ Ethernet ]        
+    01 0E CF 00 00 00   00 0C 29 15 37 A3   88 92 
     FF FF FF FF FF FF   aa bb cc dd ee ff   88 92
     ---------------------------------------------
     0  1  2  3  4  5    6  7  8  9  10 10   12 13
@@ -189,6 +194,7 @@ class packageHelper
     -Destination MAC Address, FF to broadcast 
                     
     [ PN‑DCP ]
+    FE FE   05   00   8A B4 83 20   00 00 00 04 FF FF 
     FE FE   05   00   12 34 56 78   00 00   00 04
     ---------------------------------------------
     14 15   16   17   18 19 20 21   22 23   23 24
@@ -207,10 +213,9 @@ class packageHelper
     Frame ID
 
     [ DCP ]
-    FF FF   00 00
-    25 26   27 28
-
     FF  FF  00 00
+    
+    25 26   27 28
     ^   ^   ^^^^^
     |   |   |
     |   |   Block len
@@ -225,7 +230,7 @@ class packageHelper
         /// @brief Build a PN-DCP Identify request frame.
         /// @param mac_address Source MAC to place in Ethernet header.
         /// @return A 60-byte frame ready for pcap_sendpacket().
-        static std::array<uint8_t,60> build_DCP(std::array<uint8_t,6>* mac_address);
+        static std::array<uint8_t,60> build_DCP(std::array<uint8_t,6>* mac_address,std::array<uint8_t,4>& XID);
 
     private:
         
@@ -238,7 +243,7 @@ class packageHelper
         static inline std::array<uint8_t,6> parse_mac(const std::string& s);
 
         /// @brief Build the PN-DCP header (FrameID, ServiceID/Type, TransactionID...).
-        static void _build_DCP_header(std::array<uint8_t,frame_len>& frame,int& idx);
+        static void _build_DCP_header(std::array<uint8_t,frame_len>& frame,int& idx,std::array<uint8_t,4>& XID);
     
         /// @brief Build the DCP block list for Identify (Option/Suboption/BlockLen...).
         static void _build_DCP_message(std::array<uint8_t,frame_len>& frame,int& idx);

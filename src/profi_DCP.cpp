@@ -1,8 +1,13 @@
+
 #include <profi_DCP.hpp>
 #include <sys/types.h>
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#ifdef _WIN32
+    #include <misc.h>
+    #include <fstream>
+#endif
 using namespace std::chrono;
 
 #pragma comment(lib, "iphlpapi.lib")
@@ -189,11 +194,14 @@ int profinet::PcapClient::identifyAll()
     live_process = pcap_open_live(card,65535,1,500,errbuf);
     _set_filter(live_process);
     mac_addr=_get_mac();
-    auto tmp = packageHelper::build_DCP(&mac_addr);
+    
+    auto tmp = packageHelper::build_DCP(&mac_addr,XID);
+   
     u_char* dcp_req = reinterpret_cast<u_char*>(tmp.data());
+    
     int len = tmp.size();
-        
-    if(pcap_res=pcap_sendpacket(live_process,dcp_req,len)==PCAP_ERROR )
+    for(auto i: tmp) printf("%02X ",i); std::cout<<"\n";
+    if(pcap_sendpacket(live_process,dcp_req,len)!=0 )
     {
         std::cerr<<"No packed has been sent for general reason"<< pcap_geterr(live_process)<<"\n";
         return pcap_res;
@@ -212,6 +220,7 @@ int profinet::PcapClient::identifyAll()
         std::cout<<"exit Loop\n";
     }
     pcap_close(live_process);
+    
     return 0;
 };
 
@@ -247,15 +256,16 @@ void profinet::PcapClient::_package_process(u_char* user, const pcap_pkthdr* h, 
 /* ---------------- Frame builder ---------------- */
 
 /// \brief Build a 60-byte PN-DCP Identify request Ethernet frame.
-std::array<uint8_t,60> packageHelper::build_DCP(std::array<uint8_t,6>* mac_address)
+std::array<uint8_t,60> packageHelper::build_DCP(std::array<uint8_t,6>* mac_address,std::array<uint8_t,4>& XID)
 {
     std::array<uint8_t,frame_len> frame{};
     int idx=0;
-    
+       
     _build_ETH_header(frame,idx,mac_address);
-    _build_DCP_header(frame,idx);
+    _build_DCP_header(frame,idx,XID);
     _build_DCP_message(frame,idx);
     if(idx<60)for(int i = idx;i==frame_len;i++) frame[i]=0x00;
+
 
     return frame;
 }
@@ -283,9 +293,9 @@ void packageHelper::_build_ETH_header(std::array<uint8_t,frame_len>& frame,int& 
 }
 
 /// \brief Fill PN-DCP Identify header (FrameID 0xFEFE, ServiceID 0x05).
-void packageHelper::_build_DCP_header(std::array<uint8_t,frame_len>& frame,int& idx)
+void packageHelper::_build_DCP_header(std::array<uint8_t,frame_len>& frame,int& idx,std::array<uint8_t,4>& XID)
 {
-    srand(static_cast<unsigned>(time(nullptr))); 
+     
     
     // Frame ID
     frame[idx++] = 0xfe; frame[idx++] = 0xfe;
@@ -294,10 +304,13 @@ void packageHelper::_build_DCP_header(std::array<uint8_t,frame_len>& frame,int& 
     frame[idx++] = 0x05;    frame[idx++] = 0x00;
     
     // Transaction ID random
-    for(int i =0;i>4;i++)
-    {
-        int n = rand() % 99;
-        frame[idx++] = static_cast<uint8_t>(n & 0xFF);;
+    int n;
+    srand(time(NULL));
+    for(int i =0;i<=3;i++)
+    {   
+        n = rand();
+        frame[idx++] = static_cast<uint8_t>(n);
+        XID[i] = static_cast<uint8_t>(n);
     } 
 
     // ResponseDelay
@@ -311,8 +324,13 @@ void packageHelper::_build_DCP_header(std::array<uint8_t,frame_len>& frame,int& 
 /// \brief Append DCP option/suboption blocks for Identify (All-Selector).
 void packageHelper::_build_DCP_message(std::array<uint8_t,frame_len>& frame,int& idx)
 {
-    // Options              // Suboption            // Blocklen
-    frame[idx++] = 0xff;    frame[idx++] = 0xff;    frame[idx++] = 0xff; 
+    // Options                          
+    frame[idx++] = 0xff;    
+    // Suboption
+    frame[idx++] = 0xff;
+    // Blocklen
+    frame[idx++] = 0x00;  
+    frame[idx++] = 0x00; 
     
 }
 
@@ -341,9 +359,26 @@ void profinet::Sniffer::start(pcap_t* handle)
 void profinet::Sniffer::onPacket(const pcap_pkthdr* h, const u_char* bytes) 
 {
     std::vector<uint8_t> data(bytes, bytes + h->caplen);
-    u_char _bytes = *bytes;
-    auto obj =profinet::DCP_Device::create(h->caplen,_bytes);
+        
+    for(auto i: data)  {
+        printf("%02X ",i);
+    }
+
+    std::cout<<"\n";
+    /*
+    if(! data.size() < 60)
+    {
+        auto obj =profinet::DCP_Device::create(h->caplen,bytes);
+        if(obj.ip.has_value()) std::cout<<obj.ip.value()<<" ";
+        if(obj.MAC.has_value()) std::cout<<obj.MAC.value()<<" ";
+        if(obj.StationName.has_value()) std::cout<<obj.StationName.value()<<" ";
+        if(obj.Familiy.has_value()) std::cout<<obj.Familiy.value()<<" ";
+        std::cout<<"somthing\n";
+    }
+    
+    
     bool any;
+
     if(objs->size()>0) for(int i = 0; i < objs->size() ;i++) 
     {
         profinet::DCP_Device& el = objs->at(i);
@@ -353,10 +388,8 @@ void profinet::Sniffer::onPacket(const pcap_pkthdr* h, const u_char* bytes)
         if(el.StationName.has_value()&& obj.StationName.has_value()) any |= el.StationName.value() == obj.StationName;
     }
     if(!any&&obj.isPLC())
-    objs->push_back(obj);
+    objs->push_back(obj);*/
 }
-
-
 
 /// \brief Number of processed packets.
 size_t profinet::Sniffer::get_packet_nr(){return packets_;} 
@@ -374,51 +407,53 @@ bool profinet::DCP_Device::isPLC()
     return hasPlc||hasValues;
 }
 
-/// \brief Parse a captured PN-DCP reply buffer into a DCP_Device.
-profinet::DCP_Device profinet::DCP_Device::create(int len,u_char package)
+class TLV
 {
-    auto self = profinet::DCP_Device();
-    std::vector<uint8_t> data(package, package + len);
-    int idx;
-    
-    // index starts from 26 ignoring the header package since has already been filtered by pcap filter, fallback will be integrated in future
-    for(int i =26;i<len;i+=idx)
-    {
-        int idx = 0;
-        if (data[i] == 0x01)
-        { // Block only contain MAC - IP - IP suite
-            char buf[4];
-            int sub_len = data[i+1];
-            switch (data[i+1])
-            {
-                case 0x01:
-                    for(int ii = i+2;ii<=len;ii++){ sprintf("%02x",buf,data[ii]);self.MAC.value() += buf;if (ii < len - 1) self.MAC.value() += ":";idx++;}
-                    break;
-                case 0x02:
-                    for(int ii = i+2;ii<=len;ii++){ int val = data[ii];self.ip.value() += std::to_string(val);if (ii < len - 1) self.ip.value() += ".";idx++;}
-                    break;
-                default:
-                    break;
-            }
-        }
-        if (data[i] == 0x02)
+    private:
+        std::string option;
+        std::string sub_option;
+        int length;
+        std::vector<uint8_t> bytes_;
+        std::string body;
+    public:
+        static TLV create(std::vector<uint8_t> btyes,int len)
         {
-            char buf[4];
-            int len = data[i+1];
-            switch (data[i+1])
-            {
-                case 0x02:
-                    for(int ii = i+2;ii<=len;ii++){ sprintf("%02x",buf,data[ii]);self.StationName.value() += buf;;idx++;}
-                    break;
-                case 0x03:
-                    for(int ii = i+2;ii<=len;ii++){ int x = data[ii];self.Familiy.value()+=std::to_string(x);}
-                    break;
-                default:
-                    break;
-            }
-        
+            
         }
-    }
 
+};
+
+/// \brief Parse a captured PN-DCP reply buffer into a DCP_Device.
+profinet::DCP_Device profinet::DCP_Device::create(int len,const u_char* package)
+{
+
+    auto self = profinet::DCP_Device();
+    const int _lenght = len;
+    std::vector<uint8_t> data(package, package + len);
+	std::string hexString =std::to_string(data[24])+std::to_string(data[25]);
+	
+    int tlvs_len=std::stoi(hexString, nullptr, 16);
+
+	int starting_block = len-tlvs_len;
+	
+	if(starting_block!=26)return;
+    
+	std::vector<uint8_t> tlvs(data[starting_block],data[starting_block+tlvs_len]);
+
+	while( tlvs.size()>0)
+    {
+		TLV tlv =TLV::create(tlvs,TLVS);
+		res=tlv.process()
+		padding = 0 if tlv.length %2 == 0 else 1
+		for i in range(0,4+tlv.length+padding):
+			tlvs.pop(0)
+		try:
+			res = bytes.fromhex(res).decode("utf-8")
+		except:
+			pass
+
+		if("plc".lower() in res.lower()):
+			print(res)
+}
     return self;
 }

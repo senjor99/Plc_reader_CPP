@@ -40,19 +40,27 @@ target_include_directories(plc_reader PRIVATE
   ${CMAKE_SOURCE_DIR}/include
 )
 
-# --- PCAP header include path (solo Windows vendorizzato) ---
-if (WIN32)
-  target_include_directories(plc_reader PRIVATE       # FIX: aggiunto target + PRIVATE
-    ${CMAKE_SOURCE_DIR}/external/pcap
-    ${CMAKE_SOURCE_DIR}/external/pcap/pcap
-  )
-endif()
+# --- PCAP header include path ---
 
-# --- LINK DI BASE: condizionale per OS ---
-if (WIN32)
-  target_link_libraries(plc_reader PRIVATE ws2_32 iphlpapi)
+if (WIN32)  
+  set(NPCAP_DIR ${CMAKE_SOURCE_DIR}/external/pcap)
+  target_include_directories(plc_reader PRIVATE
+    ${NPCAP_DIR}
+    ${NPCAP_DIR}/pcap
+  )
+    find_library(NPCAP_LIB NAMES wpcap Packet PATHS ${NPCAP_DIR}/Lib/x64 )
+    if(NPCAP_LIB)
+      set(NPCAP_LIB_FOLDER ${NPCAP_DIR}/Lib/x64)
+      target_link_libraries(plc_reader PRIVATE ${NPCAP_LIB_FOLDER}/Packet.lib)
+      target_link_libraries(plc_reader PRIVATE ${NPCAP_LIB_FOLDER}/wpcap.lib)
+      message("-- Npcap library linked correctly")
+    else()
+      message(WARNING "Npcap lib not found")
+    endif()
+    target_link_libraries(plc_reader PRIVATE
+    ws2_32
+    iphlpapi)
 else()
-  # Con libpcap-dev installata, l'header è in /usr/include e la lib è -lpcap
   target_link_libraries(plc_reader PRIVATE pcap)
 endif()
 
@@ -90,7 +98,7 @@ elseif (EXISTS ${GLAD_DIR}/src/glad.c)
   target_include_directories(plc_reader PRIVATE ${GLAD_DIR}/include)
   target_compile_definitions(plc_reader PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLAD)
 else()
-  message(FATAL_ERROR "GLAD non trovato: genera i file in ${GLAD_DIR}/src e ${GLAD_DIR}/include")
+  message(FATAL_ERROR "GLAD not found generate compile GLAD in: ${GLAD_DIR}/src and ${GLAD_DIR}/include")
 endif()
 
 # ==== GLFW (vendorizzato se presente, altrimenti pacchetto) ====
@@ -103,15 +111,23 @@ if (EXISTS ${GLFW_DIR}/CMakeLists.txt)
   target_link_libraries(plc_reader PRIVATE glfw)
   target_include_directories(plc_reader PRIVATE ${GLFW_DIR}/include)
 else()
-  find_package(glfw3 REQUIRED)     # su Linux può essere 'glfw' o 'glfw3'
-  if (TARGET glfw)
-    target_link_libraries(plc_reader PRIVATE glfw)
-  else()
-    target_link_libraries(plc_reader PRIVATE glfw)
+
+  find_package(glfw3 QUIET CONFIG)
+    if (TARGET glfw)
+      target_link_libraries(plc_reader PRIVATE glfw)
+    elseif (TARGET glfw3)
+      target_link_libraries(plc_reader PRIVATE glfw3)
+    else()
+      message(FATAL_ERROR "GLFW non trovato: aggiungi external/glfw o installa il pacchetto")
+    endif()
+
+
+if (UNIX AND NOT APPLE)
+   target_link_libraries(plc_reader PRIVATE dl pthread X11 Xrandr Xi Xcursor Xinerama)
   endif()
+
+  target_compile_definitions(plc_reader PRIVATE BUILD_GUI=1)
 endif()
-
-
 
 # ------------------------------ # 6) TAO/PEGTL # ------------------------------ 
 if (WITH_TAO)

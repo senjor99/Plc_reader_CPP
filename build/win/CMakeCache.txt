@@ -343,7 +343,7 @@ GLFW_SOURCE_DIR:STATIC=C:/Users/faiss/Documents/plc_reader_CPP/external/glfw
 GLFW_USE_HYBRID_HPG:BOOL=OFF
 
 //Path to a library.
-NPCAP_LIB:FILEPATH=C:/Users/faiss/Documents/plc_reader_CPP/external/pcap/Lib/wpcap.lib
+NPCAP_LIB:FILEPATH=C:/Users/faiss/Documents/plc_reader_CPP/external/pcap/Lib/x64/wpcap.lib
 
 //OpenGL library for win32
 OPENGL_gl_LIBRARY:STRING=opengl32

@@ -22,8 +22,8 @@ Thumbs.db
 *.sln.docstates
 
 # Logs & temp
-*.log
-log.txt
+#*.log
+#log.txt
 
 # ImGui config
 imgui.ini
