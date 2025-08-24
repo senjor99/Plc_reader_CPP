@@ -223,7 +223,8 @@ if(WIN32)
               "${MINGW_DIR}//libwinpthread-1.dll" "$<TARGET_FILE_DIR:plc_reader>"
     )
     else()
-    message(WARNING "No Mingw64 compiler found")
+      message(WARNING "No Mingw64 compiler found")
+    endif()
 endif()
 
 file(COPY "${CMAKE_SOURCE_DIR}/root" DESTINATION "${BIN_DIR}")

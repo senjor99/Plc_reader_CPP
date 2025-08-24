@@ -406,7 +406,7 @@ bool profinet::DCP_Device::isPLC()
 
     return hasPlc||hasValues;
 }
-
+/*
 class TLV
 {
     private:
@@ -422,13 +422,14 @@ class TLV
         }
 
 };
+*/
 
 /// \brief Parse a captured PN-DCP reply buffer into a DCP_Device.
 profinet::DCP_Device profinet::DCP_Device::create(int len,const u_char* package)
 {
 
     auto self = profinet::DCP_Device();
-    const int _lenght = len;
+    /*const int _lenght = len;
     std::vector<uint8_t> data(package, package + len);
 	std::string hexString =std::to_string(data[24])+std::to_string(data[25]);
 	
@@ -454,6 +455,6 @@ profinet::DCP_Device profinet::DCP_Device::create(int len,const u_char* package)
 
 		if("plc".lower() in res.lower()):
 			print(res)
-}
+}*/
     return self;
 }
