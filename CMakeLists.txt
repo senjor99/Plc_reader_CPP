@@ -211,6 +211,20 @@ add_custom_command(TARGET plc_reader POST_BUILD
           "$<TARGET_FILE_DIR:plc_reader>/root"
   COMMENT "Copying assets next to the executable"
 )
+if(WIN32)
+  if(EXISTS "C:/mingw64")
+    set(MINGW_DIR "C:/mingw64/bin")
+    add_custom_command(TARGET plc_reader POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              "${MINGW_DIR}/libstdc++-6.dll" "$<TARGET_FILE_DIR:plc_reader>"
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              "${MINGW_DIR}//libgcc_s_seh-1.dll" "$<TARGET_FILE_DIR:plc_reader>"
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              "${MINGW_DIR}//libwinpthread-1.dll" "$<TARGET_FILE_DIR:plc_reader>"
+    )
+    else()
+    message(WARNING "No Mingw64 compiler found")
+endif()
 
 file(COPY "${CMAKE_SOURCE_DIR}/root" DESTINATION "${BIN_DIR}")
 
