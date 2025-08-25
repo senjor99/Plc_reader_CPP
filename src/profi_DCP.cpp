@@ -1,13 +1,6 @@
 
 #include <profi_DCP.hpp>
-#include <sys/types.h>
-#include <chrono>
-#include <iomanip>
-#include <sstream>
-#include <format>
-#include <fstream>
 
-#include <array>
 #ifdef _WIN32
     #include <misc.h>
 #endif
@@ -22,7 +15,7 @@ using namespace std::chrono;
 
 /// \brief Windows: extract GUID from selected pcap adapter string.
 /// \return "{...}" GUID substring or empty string if not found.
-std::string profinet::PcapClient::extract_guid() 
+std::string profinet::PcapClient::_extract_guid() 
 {
     if (net_card == "") return {};
     const char* n = net_card.c_str();
@@ -38,7 +31,7 @@ std::array<uint8_t,6> profinet::PcapClient::_get_mac()
 {
     if (net_card == "") throw std::runtime_error("WARNING no network card found");
 
-    std::string guid = extract_guid();
+    std::string guid =_extract_guid();
     if (guid.empty()) throw std::runtime_error("WARNING no GUID could be found on the network card");
 
     ULONG bufLen = 16 * 1024;
@@ -82,7 +75,7 @@ std::array<uint8_t,6> profinet::PcapClient::_get_mac()
   #endif
 
     /// \brief Linux/BSD: no GUID concept; returns empty string.
-    std::string profinet::PcapClient::extract_guid()
+    std::string profinet::PcapClient::_extract_guid()
     {
         return {}; // non usato su Linux
     }
@@ -142,7 +135,7 @@ std::array<uint8_t,6> profinet::PcapClient::_get_mac()
 
 /// \brief Constructor: enumerates interfaces via pcap.
 profinet::PcapClient::PcapClient()
-    : net_cards(_get_netCards()){};
+    : net_cards(_get_netCards()),devices(std::make_shared<std::vector<profinet::DCP_Device>>()),lock(false){};
 
 /// \brief Enumerate NICs and build "index: label" -> pcap name map.
 /// \throws std::runtime_error if pcap_findalldevs fails.
@@ -152,7 +145,7 @@ std::map<std::string,std::string> profinet::PcapClient::_get_netCards()
     std::map<std::string, std::string> cards;
 
     #ifdef _WIN32
-        // Windows: usa la sorgente di default
+        // Windows
         if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, nullptr, &alldevs, errbuf) != 0 || !alldevs) {
             throw std::runtime_error(std::string("No network device found: ") + errbuf);
         }
@@ -193,38 +186,29 @@ std::map<std::string,std::string> profinet::PcapClient::_get_netCards()
 int profinet::PcapClient::identifyAll()
 {   
     int pcap_res;
-    auto time_out_Comm = steady_clock::now() + seconds(5); 
     const char* card = net_card.c_str();
     live_process = pcap_open_live(card,65535,1,500,errbuf);
-    _set_filter(live_process);
+    time_out= std::chrono::steady_clock::now()+seconds(120) ;
     mac_addr=_get_mac();
     
     auto tmp = packageHelper::build_DCP(&mac_addr,XID);
+    _set_filter(live_process);
    
     u_char* dcp_req = reinterpret_cast<u_char*>(tmp.data());
     
     int len = tmp.size();
-    //for(auto i: tmp) printf("%02X ",i); std::cout<<"\n";
+
     if(pcap_sendpacket(live_process,dcp_req,len)!=0 )
     {
-        std::cerr<<"No packed has been sent for general reason"<< pcap_geterr(live_process)<<"\n";
+        std::cerr<<"No packed has been sent error: "<< pcap_geterr(live_process)<<"\n";
         return pcap_res;
     }
     else
     {   
-        std::cout << "package sent\n";
-        int pkg_nr;
-        auto objs = std::vector<profinet::DCP_Device>();
-        auto loop_handler = profinet::Sniffer(&objs);
+        std::cout<<"sent frame, len: "<<std::to_string(len)<<"\n";
+        parser = profinet::PackageParser(devices,&lock,live_process);
         pcap_setnonblock(live_process, 1, errbuf);
-
-        loop_handler.start(live_process);
-        pcap_breakloop(live_process);
-
-        std::cout<<"exit Loop\n";
-    }
-    pcap_close(live_process);
-    
+    }    
     return 0;
 };
 
@@ -247,7 +231,7 @@ void profinet::PcapClient:: _set_filter(pcap_t* process)
         XID[0],XID[1],XID[2],XID[3]
     );
 
-    if (pcap_compile(process, &prg, filter, 1, netmask) != PCAP_ERROR )
+    if (pcap_compile(process, &prg, filter, 1, PCAP_NETMASK_UNKNOWN ) != PCAP_ERROR )
     {
         if(pcap_setfilter(process, &prg) == PCAP_ERROR ) 
             std::cerr<<"Error raiser on network filter"<< pcap_geterr(process)<<"\n";
@@ -259,7 +243,17 @@ void profinet::PcapClient:: _set_filter(pcap_t* process)
 }
 
 /// \brief Get discovered DCP devices (if discovery ran).
-const std::vector<profinet::DCP_Device>* profinet::PcapClient::get_devices()const{return &devices;}
+const std::shared_ptr<std::vector<profinet::DCP_Device>> profinet::PcapClient::get_devices()
+{
+    if(time_out.has_value()&&parser.has_value())
+    {
+        if(std::chrono::steady_clock::now()>time_out.value()) pcap_close(live_process);
+        parser.value().start();
+    }
+    return devices;
+}
+
+const bool profinet::PcapClient::get_lock()const{ return lock;};
 
 /* ---------------- Frame builder ---------------- */
 
@@ -288,6 +282,7 @@ void packageHelper::_build_ETH_header(std::array<uint8_t,frame_len>& frame,int& 
     frame[idx++] = 0xff; frame[idx++] = 0xff;
     */
     // Destination MAC ADDRESS 01:0E:CF:00:00:00 broadcast Profinet
+    
     frame[idx++] = 0x01; frame[idx++] = 0x0e;
     frame[idx++] = 0xcf; frame[idx++] = 0x00; 
     frame[idx++] = 0x00; frame[idx++] = 0x00;
@@ -321,7 +316,7 @@ void packageHelper::_build_DCP_header(std::array<uint8_t,frame_len>& frame,int& 
     }
 
     // ResponseDelay
-    frame[idx++] = 0x00; frame[idx++] = 0x00;
+    frame[idx++] = 0x00; frame[idx++] = 0x80;
     
     // DCPDataLength
     frame[idx++] = 0x00;frame[idx++] = 0x04;
@@ -344,30 +339,53 @@ void packageHelper::_build_DCP_message(std::array<uint8_t,frame_len>& frame,int&
 /* ---------------- Sniffer ---------------- */
 
 /// \brief Ctor: store external results vector pointer.
-profinet::Sniffer::Sniffer(std::vector<profinet::DCP_Device>* _objs)
-    :objs(_objs){}
+profinet::PackageParser::PackageParser(std::shared_ptr<std::vector<profinet::DCP_Device>> _objs,bool* _lock,pcap_t* handle)
+    :objs(_objs),lock(_lock),handle_(handle){}
 
-/// \brief pcap callback trampoline -> onPacket().
-void profinet::Sniffer::pcap_cb(u_char* user, const pcap_pkthdr* h, const u_char* bytes) 
+    /// \brief pcap callback trampoline -> onPacket().
+void profinet::PackageParser::pcap_cb(u_char* user, const pcap_pkthdr* h, const u_char* bytes) 
 {
-    auto* self = reinterpret_cast<Sniffer*>(user);
+    auto* self = reinterpret_cast<PackageParser*>(user);
     self->onPacket(h, bytes);
 }
 
-/// \brief Start pcap loop (bounded by packet count/time).
-void profinet::Sniffer::start(pcap_t* handle) 
+/// \brief Per-packet parser: decode DCP and append device if new/PLC-like.
+void profinet::PackageParser::onPacket(const pcap_pkthdr* h, const u_char* bytes) 
 {
-    handle_ = handle;
-    int pkg_nr = pcap_loop(handle_, 800, &Sniffer::pcap_cb, reinterpret_cast<u_char*>(this));
-    std::cout << "packet: "<<std::to_string(pkg_nr)<<" looping\n";
+    *lock = true;
+    auto dev = profinet::DCP_Device::create(h->caplen,bytes);
+    bool exists  = false;
+    if(dev.has_value()&&dev.value().isPLC()) 
+    {
+        if(objs->size()>1)
+            for(size_t i = 0 ;i < objs->size();i++)
+                if( objs->at(i).ip.value().get_ip()==dev.value().ip.value().get_ip())
+                {
+                    exists = true;
+                    break;
+                }
+        
+        if(!exists) 
+        {
+            objs->push_back(dev.value());
+            std::sort(objs->begin(), objs->end(),
+              [](const DCP_Device& a, const DCP_Device& b) {
+                  return a.StationName.value() < b.StationName.value(); // lexicografico
+              });
+        }
+    }
+    *lock = false;
 }
 
-/// \brief Per-packet parser: decode DCP and append device if new/PLC-like.
-void profinet::Sniffer::onPacket(const pcap_pkthdr* h, const u_char* bytes) 
+/// \brief Start pcap loop (bounded by packet count/time).
+void profinet::PackageParser::start() 
 {
-    auto dev = profinet::DCP_Device::create(h->caplen,bytes);
-    if(dev.has_value()&&dev.value().isPLC()) objs->push_back(dev.value());
+    const int pkg_target = 64;
+    packets_ = pcap_dispatch(handle_, pkg_target, &PackageParser::pcap_cb,reinterpret_cast<u_char*>(this));
 }
+
+
+
 
 /* ---------------- DCP_Device ---------------- */
 
@@ -377,14 +395,15 @@ bool profinet::DCP_Device::isPLC(){ return Family.has_value() && Family.value().
 /// \brief Get TLV class and base on it populate DCP_Device information.
 void profinet::DCP_Device::add_TLV(TLV tlv)
 {
-    if(tlv.get_option() == 0x02)
+    if(tlv.get_option() == 0x02) 
         switch (tlv.get_suboption())
         {
             case 0x01:
                 Family =  std::string(tlv.get_body().begin(), tlv.get_body().end());
                 break;
             case 0x02:
-                StationName = std::string(tlv.get_body().begin(), tlv.get_body().end());
+                StationName  = std::string(tlv.get_body().begin(), tlv.get_body().end());
+                StationName  = StationName.value().substr(0,StationName.value().find("."));
                 break;
             
             default:
@@ -408,6 +427,8 @@ std::optional<profinet::DCP_Device> profinet::DCP_Device::create(int len,const u
 {
     
     std::vector<uint8_t> data(package, package + len);   
+    
+    
 
     int tlvs_len = static_cast<int>((data[24] << 8) | data[25]);
     int starting_block = len-tlvs_len;
@@ -419,7 +440,7 @@ std::optional<profinet::DCP_Device> profinet::DCP_Device::create(int len,const u
     auto self = profinet::DCP_Device();
 	while( tlvs.size()>0)
     {
-		std::optional<TLV> tlv =TLV::create(tlvs,len);
+		std::optional<TLV> tlv =TLV::create(tlvs);
 		if(tlv.has_value())
         {    
             int padding = static_cast<int>(tlv.value().get_len())  %2 == 0  ? 0 : 1;
@@ -455,7 +476,7 @@ int profinet::TLV::get_len(){return len;}
 const std::vector<uint8_t>& profinet::TLV::get_body(){ return body; }
 
 /// \brief Parse a TLV from a vector of byte.
-std::optional<profinet::TLV> profinet::TLV::create(std::vector<uint8_t>& bt,int len)
+std::optional<profinet::TLV> profinet::TLV::create(std::vector<uint8_t>& bt)
 {
     if(bt.size() < 4)return std::nullopt;
     
@@ -467,89 +488,3 @@ std::optional<profinet::TLV> profinet::TLV::create(std::vector<uint8_t>& bt,int 
 
     return self;
 }
-
-/*----------------------------DEBUG-----------------------------*/
-/*
-static uint8_t hex_nibble(char c) {
-    switch (c)
-    {
-    case '0' : return 0x0;
-    case '1' : return 0x1;
-    case '2' : return 0x2;
-    case '3' : return 0x3;
-    case '4' : return 0x4;
-    case '5' : return 0x5;
-    case '6' : return 0x6;
-    case '7' : return 0x7;
-    case '8' : return 0x8;
-    case '9' : return 0x9;
-    case 'A' : return 0xa;
-    case 'B' : return 0xb;
-    case 'C' : return 0xc;
-    case 'D' : return 0xd;
-    case 'E' : return 0xe;
-    case 'F' : return 0xf;
-
-    default:
-        break;
-    }
-}
-
-static std::pair<u_char*,int> hex_line_to_bytes(std::string line) 
-{
-    int idx = 0;
-    const size_t len = line.size(); 
-    std::array<u_char,500> res;
-    for (int i = 0;i < line.size();i+=2) 
-    {
-        uint8_t first = hex_nibble(line[i]);
-        uint8_t second = hex_nibble(line[i+1]);
-        res[idx] = (first << 4 )| second;
-        idx++;
-    }
-    u_char* res_ptr = res.begin();
-    std::pair<u_char*,int> result(res_ptr,idx);
-    return result;
-}
-
-int main()
-{
-
-    std::ifstream in(std::filesystem::current_path().string()+"/log.txt");
-    if (!in) {
-        std::cerr << "Non riesco ad aprire "<<std::filesystem::current_path().string()+"/log.txt"<<"\n";
-        return 1;
-    }
-
-    std::string line;
-    size_t line_no = 0;
-    while (std::getline(in, line)) {
-
-        ++line_no;
-
-
-
-        try {
-            // se serve il cast esplicito:
-            const u_char* ptr = reinterpret_cast<const u_char*>(line.data());
-            std::pair<u_char*,int> _line = hex_line_to_bytes(line);
-            std::optional<profinet::DCP_Device> dev = profinet::DCP_Device::create(_line.second,_line.first);
-            if(dev.has_value()&&dev.value().isPLC())
-            {
-                // TODO: stampa ciò che ti interessa
-                if (dev.value().StationName.has_value())
-                    std::cout << "Linea " << line_no << " StationName: " << dev.value().StationName.value() << "\n";
-                if (dev.value().Family.has_value())
-                    std::cout << "Linea " << line_no << " Family: " << dev.value().Family.value() << "\n";
-                if (dev.value().ip.has_value())
-                    std::cout << "Linea " << line_no << " IP: " << dev.value().ip.value().get_ip() << "\n";
-                std::cout<<"\n";
-            }   
-        } catch (const std::exception& e) {
-            std::cerr << "Linea " << line_no << ": errore parsing DCP: " << e.what() << "\n";
-        }
-    }
-
-    return 0;
-}
-*/

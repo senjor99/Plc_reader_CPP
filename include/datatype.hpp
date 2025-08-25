@@ -29,7 +29,7 @@ class STRUCT_ARRAY_EL;
 class STRUCT_ARRAY;
 class UDT_RAW;
 class DB;
-
+class DCP_Device;
 struct FILTER;
 
 using VariantElement = 
@@ -43,6 +43,12 @@ using VariantElement =
         std::shared_ptr<STRUCT_SINGLE>,
         std::shared_ptr<STRUCT_ARRAY_EL>,
         std::shared_ptr<STRUCT_ARRAY>
+    >;
+
+using Shared_DeviceList = std::shared_ptr<
+    std::vector<
+        DCP_Device
+        >
     >;
 
 using UdtRawMap = 

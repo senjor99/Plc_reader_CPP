@@ -23,11 +23,13 @@
 
 #include <datatype.hpp>
 #include <random>
-#include <cstdint>
 #include <stdexcept>
 #include <cstring>
 #include <cstdlib> 
 #include <ctime>
+#include <sys/types.h>
+#include <chrono>
+#include <sstream>
 
 /**
  * @brief Profinet DCP discovery and packet utilities.
@@ -96,7 +98,7 @@ namespace profinet
             int get_len();
             const std::vector<uint8_t>& get_body();
 
-            static std::optional<TLV> create(std::vector<uint8_t>& bt,int len);
+            static std::optional<TLV> create(std::vector<uint8_t>& bt);
     };
 
     /* ----------------- DCP Device ------------------ */
@@ -121,7 +123,7 @@ namespace profinet
         
         /// Device family/product string or code (vendor specific), if present.
         std::optional<std::string> Family;
-        
+    
         /// @brief Factory: parse a PN-DCP reply into a device object.
         /// @param len Captured length in bytes.
         /// @param package Pointer to the full L2 frame buffer.
@@ -141,24 +143,27 @@ namespace profinet
      * @brief Thin wrapper around pcap_loop to collect PN-DCP responses.
      * @details Non-owning: it writes results into an external vector passed in ctor.
      */
-    class Sniffer {
+    class PackageParser {
     public:
     
         /// @brief Start capturing on the given pcap handle; calls onPacket per frame.
-        void start(pcap_t* handle);
+        void start();
 
         /// @brief Construct a sniffer that appends results into \p _objs .
-        Sniffer(std::vector<DCP_Device>* _objs);
+        PackageParser(std::shared_ptr<std::vector<profinet::DCP_Device>> _objs,bool* _lock,pcap_t* handle);
+        PackageParser() = default;
 
     private:
-        
+
+
         /// @brief Static pcap callback trampoline -> onPacket().
         static void pcap_cb(u_char* user, const pcap_pkthdr* h, const u_char* bytes) ;
         
         /// @brief User-defined callback: parse a single captured frame.
         void onPacket(const pcap_pkthdr* h, const u_char* bytes) ;
         
-        std::vector<DCP_Device>* objs;  ///< External results vector (non-owning).
+        std::shared_ptr<std::vector<profinet::DCP_Device>> objs;  ///< External results vector (non-owning).
+        bool* lock;
         pcap_t* handle_ = nullptr;      ///< Active pcap handle.
         size_t  packets_ = 0;           ///< Packets processed.
     };
@@ -176,26 +181,23 @@ namespace profinet
     class PcapClient
     {
     private:
-        int comm;
-        int payload;
-        int package;
-        
         pcap_t* live_process;
-        pcap_handler handler;
-        bpf_u_int32 netmask;
         std::string net_card = "";
         std::map<std::string,std::string> net_cards;
         std::array<uint8_t,6> mac_addr{};
         std::array<uint8_t,4> XID{};
-        std::vector<profinet::DCP_Device> devices;
-
+        std::shared_ptr<std::vector<profinet::DCP_Device>> devices;
+        std::optional<PackageParser> parser;
+        
+        std::optional<std::chrono::steady_clock::time_point> time_out;
+        
         char errbuf[PCAP_ERRBUF_SIZE];
         
         /// @brief Enumerate available network interfaces (pcap names + friendly labels).
         std::map<std::string,std::string> _get_netCards();
     
         /// @brief Extract interface GUID from a Windows pcap adapter name (no-op on Linux).
-        std::string extract_guid();
+        std::string _extract_guid();
 
         /// @brief Get interface MAC address for the selected NIC.
         std::array<uint8_t,6> _get_mac();
@@ -203,6 +205,7 @@ namespace profinet
         /// @brief Install a BPF filter (EtherType 0x8892 for Profinet).
         void _set_filter(pcap_t* process);
 
+        bool lock;
     public:
         
         /// @brief Construct and cache network interface list.
@@ -214,8 +217,8 @@ namespace profinet
         int identifyAll();
         
         /// @brief Get last discovered device list (if any).
-        const std::vector<profinet::DCP_Device>* get_devices()const;
-        
+        const std::shared_ptr<std::vector<profinet::DCP_Device>> get_devices();
+        const bool get_lock()const;
         /// @brief Map of "idx: friendly name" -> pcap adapter string.
         std::map<std::string,std::string> get_cards();
         
@@ -294,9 +297,6 @@ class packageHelper
         /// @brief Build Ethernet L2 header (dest, src, EtherType).
         static void _build_ETH_header(std::array<uint8_t,frame_len>& frame,int& idx,std::array<uint8_t,6>* mac_address);
     
-        /// @brief Parse "aa:bb:cc:dd:ee:ff" into 6 bytes.
-        static inline std::array<uint8_t,6> parse_mac(const std::string& s);
-
         /// @brief Build the PN-DCP header (FrameID, ServiceID/Type, TransactionID...).
         static void _build_DCP_header(std::array<uint8_t,frame_len>& frame,int& idx,std::array<uint8_t,4>& XID);
     

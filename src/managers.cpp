@@ -22,7 +22,11 @@ void NetManager::scan_network() { network.identifyAll(); }
 const std::map<std::string,std::string> NetManager::get_netCards(){ return network.get_cards(); }
 
 /// Returns a list of stored device keys for quick access.
-const std::vector<profinet::DCP_Device>* NetManager::get_devices() { return network.get_devices(); }
+std::vector<profinet::DCP_Device>* NetManager::get_devices() 
+{
+    if(!network.get_lock()) devices = *network.get_devices();
+    return &devices; 
+}
 
 /// Returns the ip setted from the gui into the manager, can be a std::nullopt.
 const std::optional<std::string> NetManager::get_ip() { return ip_selected; }

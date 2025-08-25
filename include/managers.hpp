@@ -11,6 +11,7 @@ class NetManager {
         TS7Client Client;
         profinet::PcapClient network;
         std::optional<std::string> ip_selected = std::nullopt;
+        std::vector<profinet::DCP_Device> devices;
 
     public:
         NetManager();   
@@ -18,7 +19,7 @@ class NetManager {
         void scan_network();
         
         const std::map<std::string,std::string> get_netCards();
-        const std::vector<profinet::DCP_Device>* get_devices();
+        std::vector<profinet::DCP_Device>* get_devices();
         const std::optional<std::string> get_ip();
 
         void plc_data_retrieve(int db_nr,int size,std::vector<unsigned char>* buffer);

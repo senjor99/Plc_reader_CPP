@@ -84,8 +84,9 @@ void ConnectionBar::DrawDeviceCombo()
         if(!devices->empty())   
         { 
             for (int i = 0; i < devices->size(); ++i) {
-                bool is_selected = (device_combo_name == devices->at(i).StationName.value());
-                if (ImGui::Selectable(devices->at(i).StationName.value().c_str(), is_selected)) {
+                bool is_selected = (device_combo_name == devices->at(i).StationName.value()+" - "+devices->at(i).ip.value().get_ip());
+                std::string indexed_name= std::to_string(i)+" : "+devices->at(i).StationName.value()+" - "+devices->at(i).ip.value().get_ip();
+                if (ImGui::Selectable(indexed_name.c_str(), is_selected)) {
                     this_controller->CommMan->NetMan.set_ip(std::move(devices->at(i).ip.value().get_ip()));
                     device_combo_name = devices->at(i).StationName.value();
                     ImGui::SetItemDefaultFocus();
@@ -141,7 +142,7 @@ void ConnectionBar::DrawDbNr()
 void ConnectionBar::Draw() {
 
     ImGui::SameLine();
-    ImGui::SetNextItemWidth(200);
+    ImGui::SetNextItemWidth(400);
     DrawDeviceCombo();
 
     //ImGui::SameLine();
@@ -369,7 +370,8 @@ void Body::Draw_DirectoryTree(const FileFolderVar& el)
     else
     {
         _file_ f = std::get<_file_>(el);
-        if (ImGui::TreeNodeEx(f.name.c_str(), ImGuiTreeNodeFlags_Framed|ImGuiTreeNodeFlags_OpenOnDoubleClick|ImGuiTreeNodeFlags_OpenOnArrow))
+        auto no_ext_name = f.name.substr(0,f.name.find("."));
+        if (ImGui::TreeNodeEx(no_ext_name.c_str(), ImGuiTreeNodeFlags_Framed|ImGuiTreeNodeFlags_OpenOnDoubleClick|ImGuiTreeNodeFlags_OpenOnArrow))
         {
             if (ImGui::Button("Open")) {
                 DbInfo db = DbInfo();
@@ -380,7 +382,7 @@ void Body::Draw_DirectoryTree(const FileFolderVar& el)
             }
             ImGui::SameLine();
 
-            if (ImGui::Button("TEST")) {
+            if (ImGui::Button("Proprerties")) {
                 //this_controller->CommMan->add_directory();
             }
             ImGui::TreePop();
