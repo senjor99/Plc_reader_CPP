@@ -4,10 +4,14 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <format>
+#include <fstream>
+
+#include <array>
 #ifdef _WIN32
     #include <misc.h>
-    #include <fstream>
 #endif
+
 using namespace std::chrono;
 
 #pragma comment(lib, "iphlpapi.lib")
@@ -200,7 +204,7 @@ int profinet::PcapClient::identifyAll()
     u_char* dcp_req = reinterpret_cast<u_char*>(tmp.data());
     
     int len = tmp.size();
-    for(auto i: tmp) printf("%02X ",i); std::cout<<"\n";
+    //for(auto i: tmp) printf("%02X ",i); std::cout<<"\n";
     if(pcap_sendpacket(live_process,dcp_req,len)!=0 )
     {
         std::cerr<<"No packed has been sent for general reason"<< pcap_geterr(live_process)<<"\n";
@@ -234,24 +238,28 @@ void profinet::PcapClient::set_card(std::string in){ net_card = in;}
 void profinet::PcapClient:: _set_filter(pcap_t* process)
 {
     bpf_program prg{};
-    const char* filter= "ether proto 0x8892";
+    char filter[512];
+    std::snprintf
+    (
+        filter, sizeof(filter),  
+        "ether proto 0x8892 and ("
+        "ether[18] = 0x%02X and ether[19] = 0x%02X and ether[20] = 0x%02X and ether[21] = 0x%02X)",
+        XID[0],XID[1],XID[2],XID[3]
+    );
 
     if (pcap_compile(process, &prg, filter, 1, netmask) != PCAP_ERROR )
     {
-        if(pcap_setfilter(process, &prg) == PCAP_ERROR ) std::cerr<<"Error raiser on network filter"<< pcap_geterr(process)<<"\n";
+        if(pcap_setfilter(process, &prg) == PCAP_ERROR ) 
+            std::cerr<<"Error raiser on network filter"<< pcap_geterr(process)<<"\n";
     }
-    else std::cerr<<"Something wrong in the network filter"<< pcap_geterr(process)<<"\n";
+    else 
+        std::cerr<<"Something wrong in the network filter"<< pcap_geterr(process)<<"\n";
+
     pcap_freecode(&prg);
 }
 
 /// \brief Get discovered DCP devices (if discovery ran).
-std::optional<std::vector<profinet::DCP_Device>> profinet::PcapClient::get_devices(){return devices;}
-
-/// \brief Optional inline packet processor (unused for now).
-void profinet::PcapClient::_package_process(u_char* user, const pcap_pkthdr* h, const u_char* bytes) 
-{
-
-}
+const std::vector<profinet::DCP_Device>* profinet::PcapClient::get_devices()const{return &devices;}
 
 /* ---------------- Frame builder ---------------- */
 
@@ -264,7 +272,7 @@ std::array<uint8_t,60> packageHelper::build_DCP(std::array<uint8_t,6>* mac_addre
     _build_ETH_header(frame,idx,mac_address);
     _build_DCP_header(frame,idx,XID);
     _build_DCP_message(frame,idx);
-    if(idx<60)for(int i = idx;i==frame_len;i++) frame[i]=0x00;
+    if(idx<60)for(int i = idx;i<frame_len;i++) frame[i]=0x00;
 
 
     return frame;
@@ -304,14 +312,13 @@ void packageHelper::_build_DCP_header(std::array<uint8_t,frame_len>& frame,int& 
     frame[idx++] = 0x05;    frame[idx++] = 0x00;
     
     // Transaction ID random
-    int n;
-    srand(time(NULL));
-    for(int i =0;i<=3;i++)
-    {   
-        n = rand();
-        frame[idx++] = static_cast<uint8_t>(n);
-        XID[i] = static_cast<uint8_t>(n);
-    } 
+    static std::mt19937 rng(std::random_device{}());
+    
+    for (int i = 0; i < 4; ++i) 
+    {
+        uint8_t r = std::uniform_int_distribution<int>(0,255)(rng);
+        frame[idx++] = r; XID[i] = r;
+    }
 
     // ResponseDelay
     frame[idx++] = 0x00; frame[idx++] = 0x00;
@@ -358,103 +365,191 @@ void profinet::Sniffer::start(pcap_t* handle)
 /// \brief Per-packet parser: decode DCP and append device if new/PLC-like.
 void profinet::Sniffer::onPacket(const pcap_pkthdr* h, const u_char* bytes) 
 {
-    std::vector<uint8_t> data(bytes, bytes + h->caplen);
-        
-    for(auto i: data)  {
-        printf("%02X ",i);
-    }
-
-    std::cout<<"\n";
-    /*
-    if(! data.size() < 60)
-    {
-        auto obj =profinet::DCP_Device::create(h->caplen,bytes);
-        if(obj.ip.has_value()) std::cout<<obj.ip.value()<<" ";
-        if(obj.MAC.has_value()) std::cout<<obj.MAC.value()<<" ";
-        if(obj.StationName.has_value()) std::cout<<obj.StationName.value()<<" ";
-        if(obj.Familiy.has_value()) std::cout<<obj.Familiy.value()<<" ";
-        std::cout<<"somthing\n";
-    }
-    
-    
-    bool any;
-
-    if(objs->size()>0) for(int i = 0; i < objs->size() ;i++) 
-    {
-        profinet::DCP_Device& el = objs->at(i);
-        if(el.Familiy.has_value()&& obj.Familiy.has_value()) any |= el.Familiy.value() == obj.Familiy;
-        if(el.MAC.has_value()&& obj.MAC.has_value()) any |= el.MAC.value() == obj.MAC;
-        if(el.ip.has_value()&& obj.ip.has_value()) any |= el.ip.value() == obj.Familiy;
-        if(el.StationName.has_value()&& obj.StationName.has_value()) any |= el.StationName.value() == obj.StationName;
-    }
-    if(!any&&obj.isPLC())
-    objs->push_back(obj);*/
+    auto dev = profinet::DCP_Device::create(h->caplen,bytes);
+    if(dev.has_value()&&dev.value().isPLC()) objs->push_back(dev.value());
 }
-
-/// \brief Number of processed packets.
-size_t profinet::Sniffer::get_packet_nr(){return packets_;} 
-
 
 /* ---------------- DCP_Device ---------------- */
 
 /// \brief Heuristic PLC detection from stored fields.
-bool profinet::DCP_Device::isPLC()
-{
-    bool hasPlc;
-    bool hasValues = Familiy.has_value()&&ip.has_value();
-    if(Familiy.has_value()) hasPlc=to_lowercase(Familiy.value()).find("plc");
+bool profinet::DCP_Device::isPLC(){ return Family.has_value() && Family.value().find("S7") != Family.value().npos; }
 
-    return hasPlc||hasValues;
-}
-/*
-class TLV
+/// \brief Get TLV class and base on it populate DCP_Device information.
+void profinet::DCP_Device::add_TLV(TLV tlv)
 {
-    private:
-        std::string option;
-        std::string sub_option;
-        int length;
-        std::vector<uint8_t> bytes_;
-        std::string body;
-    public:
-        static TLV create(std::vector<uint8_t> btyes,int len)
+    if(tlv.get_option() == 0x02)
+        switch (tlv.get_suboption())
         {
+            case 0x01:
+                Family =  std::string(tlv.get_body().begin(), tlv.get_body().end());
+                break;
+            case 0x02:
+                StationName = std::string(tlv.get_body().begin(), tlv.get_body().end());
+                break;
             
+            default:
+                break;
         }
-
+    if(tlv.get_option() == 0x01)
+        switch (tlv.get_suboption())
+            {
+            case 0x02:
+                ip = profinet::IPParams::create(tlv.get_body());
+                break;
+            
+            default:
+                break;
+            }
+    else return;
 };
-*/
 
-/// \brief Parse a captured PN-DCP reply buffer into a DCP_Device.
-profinet::DCP_Device profinet::DCP_Device::create(int len,const u_char* package)
+/// \brief Parse a captured PN-DCP reply buffer and return a DCP_Device.
+std::optional<profinet::DCP_Device> profinet::DCP_Device::create(int len,const u_char* package)
 {
+    
+    std::vector<uint8_t> data(package, package + len);   
+
+    int tlvs_len = static_cast<int>((data[24] << 8) | data[25]);
+    int starting_block = len-tlvs_len;
+
+    if(starting_block!=26)return std::nullopt;
+
+	std::vector<uint8_t> tlvs(data.begin()+starting_block,data.begin()+starting_block+tlvs_len);
 
     auto self = profinet::DCP_Device();
-    /*const int _lenght = len;
-    std::vector<uint8_t> data(package, package + len);
-	std::string hexString =std::to_string(data[24])+std::to_string(data[25]);
-	
-    int tlvs_len=std::stoi(hexString, nullptr, 16);
-
-	int starting_block = len-tlvs_len;
-	
-	if(starting_block!=26)return;
-    
-	std::vector<uint8_t> tlvs(data[starting_block],data[starting_block+tlvs_len]);
-
 	while( tlvs.size()>0)
     {
-		TLV tlv =TLV::create(tlvs,TLVS);
-		res=tlv.process()
-		padding = 0 if tlv.length %2 == 0 else 1
-		for i in range(0,4+tlv.length+padding):
-			tlvs.pop(0)
-		try:
-			res = bytes.fromhex(res).decode("utf-8")
-		except:
-			pass
+		std::optional<TLV> tlv =TLV::create(tlvs,len);
+		if(tlv.has_value())
+        {    
+            int padding = static_cast<int>(tlv.value().get_len())  %2 == 0  ? 0 : 1;
+            tlvs.erase(tlvs.begin(),tlvs.begin()+4+tlv.value().get_len()+padding);
+            if(tlv.has_value()) self.add_TLV(tlv.value());
+        }
+        else
+        {
+            std::cerr<<"Something wrong on tlv creation";
+            return std::nullopt;
+        }
+    }
 
-		if("plc".lower() in res.lower()):
-			print(res)
-}*/
     return self;
 }
+
+/* ---------------- TLV ---------------- */
+
+/// \brief Simple TLV constructor.
+profinet::TLV::TLV(uint8_t opt, uint8_t sub_opt,int len)
+    :option(opt),sub_option(sub_opt),len(len){};
+        
+/// \brief Return TLV Option.
+uint8_t profinet::TLV::get_option(){return option;}
+
+/// \brief Return TLV Sub-Option.
+uint8_t profinet::TLV::get_suboption(){return sub_option;}
+
+/// \brief Return TLV body length.
+int profinet::TLV::get_len(){return len;}
+        
+/// \brief Return TLV body parse in bytes.
+const std::vector<uint8_t>& profinet::TLV::get_body(){ return body; }
+
+/// \brief Parse a TLV from a vector of byte.
+std::optional<profinet::TLV> profinet::TLV::create(std::vector<uint8_t>& bt,int len)
+{
+    if(bt.size() < 4)return std::nullopt;
+    
+    int L = (static_cast<int>(bt[2]) << 8) | bt[3];
+    
+    TLV self = TLV(bt[0],bt[1],L);
+    
+    self.body.assign(bt.begin() + 6, bt.begin() + 4 + L);
+
+    return self;
+}
+
+/*----------------------------DEBUG-----------------------------*/
+/*
+static uint8_t hex_nibble(char c) {
+    switch (c)
+    {
+    case '0' : return 0x0;
+    case '1' : return 0x1;
+    case '2' : return 0x2;
+    case '3' : return 0x3;
+    case '4' : return 0x4;
+    case '5' : return 0x5;
+    case '6' : return 0x6;
+    case '7' : return 0x7;
+    case '8' : return 0x8;
+    case '9' : return 0x9;
+    case 'A' : return 0xa;
+    case 'B' : return 0xb;
+    case 'C' : return 0xc;
+    case 'D' : return 0xd;
+    case 'E' : return 0xe;
+    case 'F' : return 0xf;
+
+    default:
+        break;
+    }
+}
+
+static std::pair<u_char*,int> hex_line_to_bytes(std::string line) 
+{
+    int idx = 0;
+    const size_t len = line.size(); 
+    std::array<u_char,500> res;
+    for (int i = 0;i < line.size();i+=2) 
+    {
+        uint8_t first = hex_nibble(line[i]);
+        uint8_t second = hex_nibble(line[i+1]);
+        res[idx] = (first << 4 )| second;
+        idx++;
+    }
+    u_char* res_ptr = res.begin();
+    std::pair<u_char*,int> result(res_ptr,idx);
+    return result;
+}
+
+int main()
+{
+
+    std::ifstream in(std::filesystem::current_path().string()+"/log.txt");
+    if (!in) {
+        std::cerr << "Non riesco ad aprire "<<std::filesystem::current_path().string()+"/log.txt"<<"\n";
+        return 1;
+    }
+
+    std::string line;
+    size_t line_no = 0;
+    while (std::getline(in, line)) {
+
+        ++line_no;
+
+
+
+        try {
+            // se serve il cast esplicito:
+            const u_char* ptr = reinterpret_cast<const u_char*>(line.data());
+            std::pair<u_char*,int> _line = hex_line_to_bytes(line);
+            std::optional<profinet::DCP_Device> dev = profinet::DCP_Device::create(_line.second,_line.first);
+            if(dev.has_value()&&dev.value().isPLC())
+            {
+                // TODO: stampa ciò che ti interessa
+                if (dev.value().StationName.has_value())
+                    std::cout << "Linea " << line_no << " StationName: " << dev.value().StationName.value() << "\n";
+                if (dev.value().Family.has_value())
+                    std::cout << "Linea " << line_no << " Family: " << dev.value().Family.value() << "\n";
+                if (dev.value().ip.has_value())
+                    std::cout << "Linea " << line_no << " IP: " << dev.value().ip.value().get_ip() << "\n";
+                std::cout<<"\n";
+            }   
+        } catch (const std::exception& e) {
+            std::cerr << "Linea " << line_no << ": errore parsing DCP: " << e.what() << "\n";
+        }
+    }
+
+    return 0;
+}
+*/

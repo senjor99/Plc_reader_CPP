@@ -3,13 +3,13 @@
 
 # compile C with /usr/bin/cc
 # compile CXX with /usr/bin/c++
-C_DEFINES = -DIMGUI_IMPL_OPENGL_LOADER_GLAD -DWITH_SNAP7=1 -DWITH_TAO=1
+C_DEFINES = -DBUILD_GUI=1 -DIMGUI_IMPL_OPENGL_LOADER_GLAD -DWITH_SNAP7=1 -DWITH_TAO=1
 
 C_INCLUDES = -I/home/denis/Projects/Plc_reader_CPP/include -I/home/denis/Projects/Plc_reader_CPP/external/imgui -I/home/denis/Projects/Plc_reader_CPP/external/imgui/backends -I/home/denis/Projects/Plc_reader_CPP/external/glad/include -I/home/denis/Projects/Plc_reader_CPP/external/PEGTL/include -I/home/denis/Projects/Plc_reader_CPP/external/snap7/release/wrappers/c-cpp -I/home/denis/Projects/Plc_reader_CPP/external/snap7/build/bin
 
 C_FLAGS = -O3 -DNDEBUG -Wall -Wextra -Wpedantic
 
-CXX_DEFINES = -DIMGUI_IMPL_OPENGL_LOADER_GLAD -DWITH_SNAP7=1 -DWITH_TAO=1
+CXX_DEFINES = -DBUILD_GUI=1 -DIMGUI_IMPL_OPENGL_LOADER_GLAD -DWITH_SNAP7=1 -DWITH_TAO=1
 
 CXX_INCLUDES = -I/home/denis/Projects/Plc_reader_CPP/include -I/home/denis/Projects/Plc_reader_CPP/external/imgui -I/home/denis/Projects/Plc_reader_CPP/external/imgui/backends -I/home/denis/Projects/Plc_reader_CPP/external/glad/include -I/home/denis/Projects/Plc_reader_CPP/external/PEGTL/include -I/home/denis/Projects/Plc_reader_CPP/external/snap7/release/wrappers/c-cpp -I/home/denis/Projects/Plc_reader_CPP/external/snap7/build/bin
 

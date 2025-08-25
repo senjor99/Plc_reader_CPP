@@ -3812,6 +3812,7 @@ CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o: /home/denis/Projects/Plc_reader_C
   /usr/include/c++/13/bits/fs_fwd.h \
   /usr/include/c++/13/bits/fs_ops.h \
   /usr/include/c++/13/bits/fs_path.h \
+  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -3909,6 +3910,8 @@ CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o: /home/denis/Projects/Plc_reader_C
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
   /usr/include/c++/13/filesystem \
+  /usr/include/c++/13/format \
+  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
@@ -4100,8 +4103,10 @@ CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o: /home/denis/Projects/Plc_reader_C
   /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
+  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
+  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -4126,9 +4131,13 @@ CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o: /home/denis/Projects/Plc_reader_C
   /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h
 
 
+/usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h:
+
 /usr/include/netpacket/packet.h:
 
 /usr/include/c++/13/chrono:
+
+/usr/include/c++/13/bits/fstream.tcc:
 
 /usr/include/x86_64-linux-gnu/sys/stat.h:
 
@@ -4295,6 +4304,8 @@ CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o: /home/denis/Projects/Plc_reader_C
 /home/denis/Projects/Plc_reader_CPP/external/PEGTL/include/tao/pegtl/internal/bytes.hpp:
 
 /home/denis/Projects/Plc_reader_CPP/external/PEGTL/include/tao/pegtl/internal/bump.hpp:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h:
 
 /home/denis/Projects/Plc_reader_CPP/external/PEGTL/include/tao/pegtl/internal/action_input.hpp:
 
@@ -5116,6 +5127,8 @@ CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o: /home/denis/Projects/Plc_reader_C
 
 /usr/include/c++/13/cerrno:
 
+/usr/include/c++/13/format:
+
 /usr/include/c++/13/stdexcept:
 
 /usr/include/c++/13/clocale:
@@ -5493,6 +5506,8 @@ CMakeFiles/plc_reader.dir/src/profi_DCP.cpp.o: /home/denis/Projects/Plc_reader_C
 /home/denis/Projects/Plc_reader_CPP/external/PEGTL/include/tao/pegtl/change_state.hpp:
 
 /home/denis/Projects/Plc_reader_CPP/external/PEGTL/include/tao/pegtl/config.hpp:
+
+/usr/include/c++/13/fstream:
 
 /home/denis/Projects/Plc_reader_CPP/external/PEGTL/include/tao/pegtl/nothing.hpp:
 

@@ -318,6 +318,7 @@ plc_reader_EXTERNAL_OBJECTS =
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/build.make
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: /usr/lib/x86_64-linux-gnu/libglfw.so.3.3
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: /home/denis/Projects/Plc_reader_CPP/external/snap7/build/bin/linux/libsnap7.so
+/home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: /home/denis/Projects/Plc_reader_CPP/external/snap7/build/bin/linux/libsnap7.so
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: /usr/lib/x86_64-linux-gnu/libGLX.so
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: /usr/lib/x86_64-linux-gnu/libOpenGL.so
 /home/denis/Projects/Plc_reader_CPP/bin/linux/plc_reader: CMakeFiles/plc_reader.dir/link.txt

@@ -3,50 +3,29 @@
 #include <hw_interface.hpp>
 #include <action.hpp>
 #include <thread>
+#include <profi_DCP.hpp>
 
 /*-------------------------------------------------------*/
 /*------------------- Network Manager -------------------*/ 
 /*-------------------------------------------------------*/
 
+
 /// Constructor that initializes the Profinet client for network operations.
-NetManager::NetManager() {network = std::make_shared<profinet::PcapClient>();}
-
-/// Returns a map of available network cards detected by the Profinet client.
-std::map<std::string,std::string> NetManager::get_netCards(){return network->get_cards();}
-
-/// Returns a list of stored device keys for quick access.
-std::vector<std::string> NetManager::get_devices_keys()const{return devices_keys;}
-
-/// Returns the currently selected device in scope, if any.
-std::shared_ptr<DeviceProfInfo> NetManager::get_device_scope(){return device_scope;}
-
-/// Returns the complete map of detected devices and their information.
-std::map<std::string,std::shared_ptr<DeviceProfInfo>> NetManager::get_devices_map()const{return devices;}
+NetManager::NetManager()
+    :network(profinet::PcapClient()) {}
 
 /// Launches a network scan to identify all available devices.
 ///  Take a look into profi_DCP.cpp for more information
-void NetManager::scan_network(){network->identifyAll();}
+void NetManager::scan_network() { network.identifyAll(); }
 
-/// Retrieves a device object by its name, or null if not found.
-std::shared_ptr<DeviceProfInfo> NetManager::get_device_from_devices(std::string device_name)
-{
-    if(auto it= devices.find(device_name); it != devices.end()){
-        return it->second;
-    }
-    else return nullptr;
-}
+/// Returns a map of available network cards detected by the Profinet client.
+const std::map<std::string,std::string> NetManager::get_netCards(){ return network.get_cards(); }
 
-/// Sets the current device in scope based on the provided key; 
-/// clears scope if key is "--None--".
-bool NetManager::set_device_scope(std::string key)
-{
-    if(auto it= devices.find(key); it != devices.end()){
-        if(it->first == "--None--"){device_scope = nullptr;}
-        else {device_scope = it->second;}
-        return true;
-    }
-    else{ return false;}
-}
+/// Returns a list of stored device keys for quick access.
+const std::vector<profinet::DCP_Device>* NetManager::get_devices() { return network.get_devices(); }
+
+/// Returns the ip setted from the gui into the manager, can be a std::nullopt.
+const std::optional<std::string> NetManager::get_ip() { return ip_selected; }
 
 ///  Connects to the active device and reads data from the specified PLC datablock into a buffer.
 void NetManager::plc_data_retrieve(int db_nr,int size,std::vector<unsigned char>* buffer) 
@@ -55,7 +34,7 @@ void NetManager::plc_data_retrieve(int db_nr,int size,std::vector<unsigned char>
     if (!buffer) {
         std::cerr << "ERRORE: buffer è null!\n";
     }
-    if (Client.ConnectTo(device_scope->ip.c_str(), 0, 1) == 0){
+    if (Client.ConnectTo(ip_selected.value().c_str(), 0, 1) == 0){
         int res= Client.DBRead(db_nr,0,size,buffer->data());
         Client.Disconnect();
     }
@@ -67,7 +46,7 @@ void NetManager::plc_data_retrieve(int db_nr,int size,std::vector<unsigned char>
 /// Connects to the active device and writes data to the specified PLC datablock.
 bool NetManager::plc_data_send(int db_nr,int size,std::vector<unsigned char> buffer ) 
 {
-    if(Client.ConnectTo(device_scope->ip.c_str(),0,1)==0){
+    if(Client.ConnectTo(ip_selected.value().c_str(),0,1)==0){
         Client.DBWrite(db_nr,0,size,buffer.data());
         return true;
     }
@@ -76,8 +55,10 @@ bool NetManager::plc_data_send(int db_nr,int size,std::vector<unsigned char> buf
 }
 
 /// Selects which network card to use for communication.
-void NetManager::set_netCard(std::string card){network->set_card(card);};
+void NetManager::set_netCard(std::string card){network.set_card(card);};
 
+
+void NetManager::set_ip(std::string ip) { ip_selected = ip;}
 /*-------------------------------------------------------------------------------------*/
 
 
@@ -164,15 +145,6 @@ CommManager::CommManager()=default;
 /// Default class destructor.
 CommManager::~CommManager()=default; 
 
-/// Returns the list of detected device keys through NetManager.
-std::vector<std::string> CommManager::get_devices_keys()const{return NetMan.get_devices_keys();}
-
-/// Returns the complete map of devices retrieved by NetManager.
-std::map<std::string,std::shared_ptr<DeviceProfInfo>> CommManager::get_devices_map()const{return NetMan.get_devices_map();}
-
-/// Returns the currently selected device object from NetManager.
-std::shared_ptr<DeviceProfInfo> CommManager::get_device_scope(){return NetMan.get_device_scope();}
-
 /// Reads PLC data through NetManager and updates the DatabaseManager with the new buffer.
 void CommManager::get_plc_data(){
     NetMan.plc_data_retrieve(DataMan.get_db_default_number(),DataMan.get_db_size()+1,&buffer);
@@ -185,24 +157,9 @@ _folder_ CommManager::get_directory(){return folders::get_instances();};
 /// Writes the current buffer to the PLC via NetManager.
 void CommManager::set_plc_data(){NetMan.plc_data_retrieve(DataMan.get_db_default_number(),DataMan.get_db_size(),&buffer);}
 
-/// Sets the current active device scope using the given device name.
-void CommManager::set_device_scope(std::string& el_name_in){NetMan.set_device_scope(el_name_in);}
-
 /// Applies a filtering mode to the database through the FilterManager.
 void CommManager::set_filter_mode(Filter::filterElem f_el)
 {
     FilMan.set_dbPtr(DataMan.get_db());
     FilMan.set_mode(f_el);
 }
-
-/// Placeholder for creating and adding a new database instance (not implemented yet    ).
-void CommManager::add_new_db(){}
-
-/// Placeholder for creating and adding a new database instance (not implemented).
-void CommManager::refresh_device(){NetMan.scan_network();}
-
-/// Updates the database default number inside DatabaseManager. Just an interface function
-void CommManager::set_db_nr(int* val){DataMan.set_db_nr(val);}        
-
-/// Placeholder for adding a new directory to the folder system (not implemented yet).
-void CommManager::add_directory(){};

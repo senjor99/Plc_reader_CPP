@@ -6,31 +6,25 @@
 #include <profi_DCP.hpp>
 
 class NetManager {
-    protected:
-        std::map<std::string,std::shared_ptr<DeviceProfInfo>> devices;
-        std::vector<std::string> devices_keys;
-        std::shared_ptr<DeviceProfInfo> device_scope = nullptr;
-        std::shared_ptr<profinet::PcapClient> network;
-        std::string subnet;
-
     private:    
+        
         TS7Client Client;
-  
+        profinet::PcapClient network;
+        std::optional<std::string> ip_selected = std::nullopt;
+
     public:
         NetManager();   
 
         void scan_network();
+        
+        const std::map<std::string,std::string> get_netCards();
+        const std::vector<profinet::DCP_Device>* get_devices();
+        const std::optional<std::string> get_ip();
 
-        std::vector<std::string> get_devices_keys()const;
-        std::shared_ptr<DeviceProfInfo> get_device_scope();
-        std::map<std::string,std::shared_ptr<DeviceProfInfo>> get_devices_map()const;
-        std::shared_ptr<DeviceProfInfo> get_device_from_devices(std::string device_name);
-        std::map<std::string,std::string> get_netCards();
-
-        bool set_device_scope(std::string key);
         void plc_data_retrieve(int db_nr,int size,std::vector<unsigned char>* buffer);
         bool plc_data_send(int db_nr,int size,std::vector<unsigned char> buffer ) ;
         void set_netCard(std::string card);
+        void set_ip(std::string ip);
 };
 
 class DatabaseManager {
@@ -77,20 +71,11 @@ class CommManager
         CommManager();
         ~CommManager();  
 
-        std::vector<std::string> get_devices_keys()const;
-        std::map<std::string,std::shared_ptr<DeviceProfInfo>> get_devices_map()const;
-        std::shared_ptr<DeviceProfInfo> get_device_scope();
-        DbInfo get_database_scope();
         void get_plc_data();
         _folder_ get_directory();
 
         void set_plc_data();
-        void set_device_scope(std::string& el_name_in);
         void set_filter_mode(Filter::filterElem f_el);
-        void refresh_device();
-        void set_db_nr(int* val);    
-        void add_new_db();    
-        void add_directory();    
 
 };
 

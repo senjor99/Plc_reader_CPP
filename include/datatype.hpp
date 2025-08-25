@@ -93,21 +93,6 @@ struct ElementInfo{
     std::shared_ptr<UDT_RAW> raw;
 };
 
-struct DeviceProfInfo
-{
-    std::string ip = "";
-    std::string raw_name;
-    std::string profiname;
-    static std::shared_ptr<DeviceProfInfo> ptr_from_S7CPUinfo(TS7CpuInfo& in,std::string _ip)
-    {
-        std::shared_ptr<DeviceProfInfo> res;
-        res->ip = _ip;
-        res->raw_name = in.ASName;
-        res->profiname = in.ModuleName;
-        return res;
-    }
-};
-
 struct DbInfo
 {
     std::string name = "";

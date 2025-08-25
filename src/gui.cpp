@@ -78,18 +78,16 @@ void ConnectionBar::set_device_combo_name(std::string in){ device_combo_name = i
 /// \details Populates from CommManager’s device map; on selection updates scope.
 void ConnectionBar::DrawDeviceCombo()
 {
-    std::vector<std::string> device_keys =this_controller->CommMan->get_devices_keys();
-    std::shared_ptr<DeviceProfInfo> device_scope = this_controller->CommMan->get_device_scope();
-    std::map<std::string,std::shared_ptr<DeviceProfInfo>> device_map = this_controller->CommMan->get_devices_map(); 
+    auto devices = this_controller->CommMan->NetMan.get_devices();
 
     if (ImGui::BeginCombo("Device", device_combo_name.c_str())) {
-        if(!device_keys.empty())   
+        if(!devices->empty())   
         { 
-            for (int i = 0; i < device_keys.size(); ++i) {
-                bool is_selected = (device_scope != nullptr && device_scope == device_map[device_keys[i]]);
-                if (ImGui::Selectable(device_keys[i].c_str(), is_selected)) {
-                    this_controller->CommMan->set_device_scope(device_keys[i]);
-                    device_combo_name = device_keys[i];
+            for (int i = 0; i < devices->size(); ++i) {
+                bool is_selected = (device_combo_name == devices->at(i).StationName.value());
+                if (ImGui::Selectable(devices->at(i).StationName.value().c_str(), is_selected)) {
+                    this_controller->CommMan->NetMan.set_ip(std::move(devices->at(i).ip.value().get_ip()));
+                    device_combo_name = devices->at(i).StationName.value();
                     ImGui::SetItemDefaultFocus();
                 }   
             }
@@ -132,7 +130,7 @@ void ConnectionBar::DrawDbNr()
         ImGui::SetNextItemWidth(100);
         if(ImGui::InputScalar(lb.c_str(),ImGuiDataType_S32,&db_nr,nullptr,nullptr))
         {
-            this_controller->CommMan->set_db_nr(&db_nr);
+            this_controller->CommMan->DataMan.set_db_nr(&db_nr);
         }
     }
 }
@@ -168,12 +166,12 @@ void ConnectionBar::Draw() {
     ImGui::SameLine();
     ImGui::SetNextItemWidth(200);
     if (ImGui::Button("Refresh Devices")) {
-        this_controller->CommMan->refresh_device();
+        this_controller->CommMan->NetMan.scan_network();
     }
 
     ImGui::SameLine();
     ImGui::SetNextItemWidth(200);
-    if( this_controller->CommMan->get_device_scope()!= nullptr  &&
+    if( this_controller->CommMan->NetMan.get_ip().has_value() &&
         this_controller->CommMan->DataMan.get_db()!=nullptr )
         {
             if (ImGui::Button("Get Data")) 
@@ -343,12 +341,12 @@ void Body::Draw_node(const VariantElement& element,int& depth_in){
 void Body::Draw_Explorer()
 {
     if (ImGui::Button("Add DB")) {
-        this_controller->CommMan->add_new_db();
+        //this_controller->CommMan->DataMan.add_new_db();
     }
     ImGui::SameLine();
 
     if (ImGui::Button("Add Directory")) {
-        this_controller->CommMan->add_directory();
+        //this_controller->CommMan->DataMan.add_directory();
     }
     _folder_ dirs = this_controller->CommMan->get_directory();
     Draw_DirectoryTree(dirs);
