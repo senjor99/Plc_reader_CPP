@@ -55,10 +55,14 @@ class DatabaseManager {
 class FilterManager{
     protected:
         std::shared_ptr<DB> db_ptr;
-        std::shared_ptr<Filter::BASE_FILTER> filter_ptr;
+        std::unique_ptr<Filter::FilterDB> filter;
+        Filter::filterElem filters;
+
     public:
-        void set_mode(Filter::filterElem f_el);
-        void set_dbPtr(std::shared_ptr<DB> ptr);
+        void set_mode(std::shared_ptr<DB>);
+        void reset_mode();
+        Filter::filterElem* get_filter();
+        
 };
 
 class CommManager
@@ -76,7 +80,7 @@ class CommManager
         _folder_ get_directory();
 
         void set_plc_data();
-        void set_filter_mode(Filter::filterElem f_el);
+        void set_filter_mode();
 
 };
 

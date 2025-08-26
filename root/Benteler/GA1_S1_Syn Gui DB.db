@@ -1,0 +1,1028 @@
+﻿TYPE "SYN_GUI_JOBs"
+VERSION : 0.1
+   STRUCT
+      Sign_On : Bool;   // Sign On Box of Job
+      Green_On : Bool;   // Green On Status Job
+      Green_Blink : Bool;   // Green Blink Status Job
+      Yellow_On : Bool;   // Yellow On Status Job
+      Yellow_Blink : Bool;   // Yellow Blink Status Job
+      Red_On : Bool;   // Red On Status Job
+      Red_Blink : Bool;   // Red Blink Status Job
+      Hide : Bool;   // Hide Box of Job
+      Spare : Byte;   // Spare
+      Value_1 : DWord;   // Value 1 of Job
+      Value_2 : DWord;   // Value 2 of Job
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "SYN_GUI_VR"
+VERSION : 0.1
+   STRUCT
+      Visible_Box : Bool;   // Component Variant Box Visibility
+      Selected : Bool;   // Component Variant Box Selected
+      Blink_Box : Bool;   // Component Variant Box Blinking
+      Warning : Bool;   // Warning on Variant
+      Error : Bool;   // Error on Variant
+      Visible_CC : Bool;   // Component Check of Variat Visible
+      Visible_PN : Bool;   // Part Number of Variat Visible
+      Visible_SN : Bool;   // Serial Number of Variat Visible
+      Spare_9 : Bool;   // Spare_9
+      Spare_10 : Bool;   // Spare_10
+      Spare_11 : Bool;   // Spare_11
+      Spare_12 : Bool;   // Spare_12
+      Spare_13 : Bool;   // Spare_13
+      Spare_14 : Bool;   // Spare_14
+      Spare_15 : Bool;   // Spare_15
+      Spare_16 : Bool;   // Spare_16
+      Box : Int;   // Number of Variant
+      CC_Green_On : Bool;   // Green On Status Component Check
+      CC_Green_Blink : Bool;   // Green Blink Status Component Check
+      CC_Yellow_On : Bool;   // Yellow On Status Component Check
+      CC_Yellow_Blink : Bool;   // Yellow Blink Status Component Check
+      CC_Red_On : Bool;   // Red On Status Component Check
+      CC_Red_Blink : Bool;   // Red Blink Status Component Check
+      CC_Spare_1 : Bool;   // Component Check Spare 1
+      CC_Spare_2 : Bool;   // Component Check Spare 2
+      PN_Green_On : Bool;   // Green On Status Part Number
+      PN_Green_Blink : Bool;   // Green Blink Status Part Number
+      PN_Yellow_On : Bool;   // Yellow On Status Part Number
+      PN_Yellow_Blink : Bool;   // Yellow Blink Status Part Number
+      PN_Red_On : Bool;   // Red On Status Part Number
+      PN_Red_Blink : Bool;   // Red Blink Status Part Number
+      PN_Spare_1 : Bool;   // Part Number Spare 1
+      PN_Spare_2 : Bool;   // Part Number Spare 2
+      SN_Green_On : Bool;   // Green On Status Serial Number
+      SN_Green_Blink : Bool;   // Green Blink Status Serial Number
+      SN_Yellow_On : Bool;   // Yellow On Status Serial Number
+      SN_Yellow_Blink : Bool;   // Yellow Blink Status Serial Number
+      SN_Red_On : Bool;   // Red On Status Serial Number
+      SN_Red_Blink : Bool;   // Red Blink Status Serial Number
+      SN_Spare_1 : Bool;   // Serial Number Spare 1
+      SN_Spare_2 : Bool;   // Serial Number Spare 2
+      Spare : Byte;   // Spare
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "SYN_GUI_LED"
+VERSION : 0.1
+   STRUCT
+      Green_On : Bool;   // Green On Status Led
+      Green_Blink : Bool;   // Green Blink Status Led
+      Yellow_On : Bool;   // Yellow On Status Led
+      Yellow_Blink : Bool;   // Yellow Blink Status Led
+      Red_On : Bool;   // Red On Status Led
+      Red_Blink : Bool;   // Red Blink Status Led
+      Spare_1 : Bool;   // Spare 1
+      Hide : Bool;   // Hide Leed
+      Spare_2 : Byte;   // Spare 2
+   END_STRUCT;
+
+END_TYPE
+
+TYPE "SYN_GUI_UDT"
+VERSION : 0.1
+   STRUCT
+      Process : Struct   // Process Structure
+         Green_On_LH : Bool;   // Status Process Left Green Fixed
+         Green_Blink_LH : Bool;   // Status Process Left Green Blinking
+         Red_On_LH : Bool;   // Status Process Left Red Fixed
+         Red_Blink_LH : Bool;   // Status Process Left Red Blinking
+         Empty_WPC_LH : Bool;   // Empty Work Piece Carrier Left
+         Spare6 : Bool;   // Spare6
+         Spare7 : Bool;   // Spare7
+         Spare8 : Bool;   // Spare8
+         Green_On_RH : Bool;   // Status Process Right Green Fixed
+         Green_Blink_RH : Bool;   // Status Process Right Green Blinking
+         Red_On_RH : Bool;   // Status Process Right Red Fixed
+         Red_Blink_RH : Bool;   // Status Process Right Red Blinking
+         Empty_WPC_RH : Bool;   // Empty Work Piece Carrier Right
+         Spare14 : Bool;   // Spare14
+         Spare15 : Bool;   // Spare15
+         Spare16 : Bool;   // Spare16
+      END_STRUCT;
+      General : Struct   // General Structure
+         WPC_End : Bool;   // Work Piece Carrir End
+         WPC_End_Blink : Bool;   // Work Piece Carrir End Blinking
+         Spare3 : Bool;   // Spare3
+         Spare4 : Bool;   // Spare4
+         Spare5 : Bool;   // Spare5
+         Spare6 : Bool;   // Spare6
+         Spare7 : Bool;   // Spare7
+         Spare8 : Bool;   // Spare8
+         Popup : Byte;   // Popup Index
+      END_STRUCT;
+      Messages : Array[1..64] of Bool;   // Messages 
+      Order : Struct   // Order structure
+         Green_On_LH : Bool;   // Status Order Left Green Fixed
+         Green_Blink_LH : Bool;   // Status Order Left Green Blinking
+         Yellow_On_LH : Bool;   // Status Order Left Yellow Fixed
+         Yellow_Blink_LH : Bool;   // Status Order Left Yellow Blinking
+         Red_On_LH : Bool;   // Status Order Left Red Fixed
+         Red_Blink_LH : Bool;   // Status Order Left Red Blinking
+         Spare7 : Bool;   // Spare7
+         LH_Visible : Bool;   // Order Left Visible
+         Green_On_RH : Bool;   // Status Order Right Green Fixed
+         Green_Blink_RH : Bool;   // Status Order Right Green Blinking
+         Yellow_On_RH : Bool;   // Status Order Right Yellow Fixed
+         Yellow_Blink_RH : Bool;   // Status Order Right Yellow Blinking
+         Red_On_RH : Bool;   // Status Order Right Red Fixed
+         Red_Blink_RH : Bool;   // Status Order Right Red Blinking
+         Spare15 : Bool;   // Spare15
+         RH_Visible : Bool;   // Order Right Visible
+      END_STRUCT;
+      Command : Struct   // Command Structure
+         Screen_Saver_Off : Bool;   // Screen Saver Off
+         Start_Cycle_Time : Bool;   // Start Cycle Time (Non-impulsive, to be maintained throughout the cycle)
+         Update_Cfg : Bool;   // Command Update Synoptic Configuration
+         Synoptic_Help : Bool;   // Command Call Popup Help Of The Synoptic
+         Grid_On : Bool;   // Command Visible Grid
+         Pointer_On : Bool;   // Command Activation Visibility Pointer
+         Update_Variant : Bool;   // Command Update Variant Configuration
+         Config_Mode : Bool;   // Command Configuration Mode
+         Dynamic_Function : Bool;   // Command Dynamic Function Activation  (Background / Popup / Message)
+         Cmd_10 : Bool;   // Spare Command 10
+         Cmd_11 : Bool;   // Spare Command 11
+         Cmd_12 : Bool;   // Spare Command 12
+         Cmd_13 : Bool;   // Spare Command 13
+         Cmd_14 : Bool;   // Spare Command 14
+         Info_App : Bool;   // Command Show Info Application
+         Exit_App : Bool;   // Command Exit Application
+      END_STRUCT;
+      Acknowledge : Struct   // AcknowledgeCommand Structure
+         Ack_1 : Bool;   // Acknowledge 1 (Not Used)
+         Ack_2 : Bool;   // Acknowledge 2 (Not Used)
+         Update_Cfg_Ack : Bool;   // Acknowledge Command Update Synoptic Configuration
+         Ack_4 : Bool;   // Acknowledge 4 (Not Used)
+         Ack_5 : Bool;   // Acknowledge 5 (Not Used)
+         Ack_6 : Bool;   // Acknowledge 6 (Not Used)
+         Update_Variant_Ack : Bool;   // Acknowledge Command Update Variant Configuration
+         Ack_8 : Bool;   // Acknowledge 8 (Not Used)
+         Ack_9 : Bool;   // Acknowledge 9 (Not Used)
+         Ack_10 : Bool;   // Acknowledge 10 (Not Used)
+         Ack_11 : Bool;   // Acknowledge 11 (Not Used)
+         Ack_12 : Bool;   // Acknowledge 12 (Not Used)
+         Ack_13 : Bool;   // Acknowledge 13 (Not Used)
+         Ack_14 : Bool;   // Acknowledge 14 (Not Used)
+         Ack_15 : Bool;   // Acknowledge 15 (Not Used)
+         Live_Bit : Bool;   // Live_Bit
+      END_STRUCT;
+      Image_Background : Int;   // Image Background Index
+      WPC_Number : Int;   // Work Piece Carrier Number
+      Joint : Array[1..40] of "SYN_GUI_JOBs";   // Synoptic Gui Joint Structure
+      Press : Array[1..20] of "SYN_GUI_JOBs";   // Synoptic Gui Press Structure
+      Test : Array[1..20] of "SYN_GUI_JOBs";   // Synoptic Gui Test Structure
+      Led_LH : Array[1..10] of "SYN_GUI_LED";   // Synoptic Gui Led Left Structure
+      Led_RH : Array[1..10] of "SYN_GUI_LED";   // Synoptic Gui Led Right Structure
+      Variant : Array[1..6] of "SYN_GUI_VR";   // Synoptic Gui Variant Structure
+      Pannel_Position_X : Int;   // Distance in X of the Pannel Relative to Zero (From Left)
+      Pannel_Position_Y : Int;   // Distance in Y of the Pannel Relative to Zero (From Top)
+      Sign_Position_X : Int;   // Distance in X of the Sign Relative to Zero (From Left)
+      Sign_Position_Y : Int;   // Distance in Y of the Sign Relative to Zero (From Top)
+      Cycle_Time : Int;   // Spare1
+      Spare1 : Int;   // Spare2
+      "Date&Time" : Date_And_Time;   // PLC Date&Time
+   END_STRUCT;
+
+END_TYPE
+
+DATA_BLOCK "GA1_S1_Syn Gui DB"
+{ S7_Optimized_Access := 'FALSE' }
+VERSION : 0.1
+NON_RETAIN
+"SYN_GUI_UDT"
+
+BEGIN
+   Process.Green_On_LH := FALSE;
+   Process.Green_Blink_LH := FALSE;
+   Process.Red_On_LH := FALSE;
+   Process.Red_Blink_LH := FALSE;
+   Process.Empty_WPC_LH := FALSE;
+   Process.Spare6 := FALSE;
+   Process.Spare7 := FALSE;
+   Process.Spare8 := FALSE;
+   Process.Green_On_RH := FALSE;
+   Process.Green_Blink_RH := FALSE;
+   Process.Red_On_RH := FALSE;
+   Process.Red_Blink_RH := FALSE;
+   Process.Empty_WPC_RH := FALSE;
+   Process.Spare14 := FALSE;
+   Process.Spare15 := FALSE;
+   Process.Spare16 := FALSE;
+   General.WPC_End := FALSE;
+   General.WPC_End_Blink := TRUE;
+   General.Spare3 := FALSE;
+   General.Spare4 := FALSE;
+   General.Spare5 := FALSE;
+   General.Spare6 := FALSE;
+   General.Spare7 := FALSE;
+   General.Spare8 := FALSE;
+   General.Popup := 16#00;
+   Order.Green_On_LH := FALSE;
+   Order.Green_Blink_LH := FALSE;
+   Order.Yellow_On_LH := FALSE;
+   Order.Yellow_Blink_LH := FALSE;
+   Order.Red_On_LH := FALSE;
+   Order.Red_Blink_LH := FALSE;
+   Order.Spare7 := FALSE;
+   Order.LH_Visible := FALSE;
+   Order.Green_On_RH := FALSE;
+   Order.Green_Blink_RH := FALSE;
+   Order.Yellow_On_RH := FALSE;
+   Order.Yellow_Blink_RH := FALSE;
+   Order.Red_On_RH := FALSE;
+   Order.Red_Blink_RH := FALSE;
+   Order.Spare15 := FALSE;
+   Order.RH_Visible := FALSE;
+   Command.Screen_Saver_Off := TRUE;
+   Command.Start_Cycle_Time := FALSE;
+   Command.Update_Cfg := FALSE;
+   Command.Synoptic_Help := FALSE;
+   Command.Grid_On := FALSE;
+   Command.Pointer_On := FALSE;
+   Command.Update_Variant := FALSE;
+   Command.Config_Mode := FALSE;
+   Command.Dynamic_Function := FALSE;
+   Command.Cmd_10 := FALSE;
+   Command.Cmd_11 := FALSE;
+   Command.Cmd_12 := FALSE;
+   Command.Cmd_13 := FALSE;
+   Command.Cmd_14 := FALSE;
+   Command.Info_App := FALSE;
+   Command.Exit_App := FALSE;
+   Acknowledge.Ack_1 := FALSE;
+   Acknowledge.Ack_2 := FALSE;
+   Acknowledge.Update_Cfg_Ack := FALSE;
+   Acknowledge.Ack_4 := FALSE;
+   Acknowledge.Ack_5 := FALSE;
+   Acknowledge.Ack_6 := FALSE;
+   Acknowledge.Update_Variant_Ack := FALSE;
+   Acknowledge.Ack_8 := FALSE;
+   Acknowledge.Ack_9 := FALSE;
+   Acknowledge.Ack_10 := FALSE;
+   Acknowledge.Ack_11 := FALSE;
+   Acknowledge.Ack_12 := FALSE;
+   Acknowledge.Ack_13 := FALSE;
+   Acknowledge.Ack_14 := FALSE;
+   Acknowledge.Ack_15 := FALSE;
+   Acknowledge.Live_Bit := TRUE;
+   Image_Background := 1;
+   WPC_Number := 0;
+   Joint[1].Sign_On := FALSE;
+   Joint[1].Green_On := TRUE;
+   Joint[1].Green_Blink := FALSE;
+   Joint[1].Yellow_On := FALSE;
+   Joint[1].Yellow_Blink := FALSE;
+   Joint[1].Red_On := FALSE;
+   Joint[1].Red_Blink := FALSE;
+   Joint[1].Hide := TRUE;
+   Joint[1].Spare := 16#00;
+   Joint[2].Sign_On := FALSE;
+   Joint[2].Green_On := TRUE;
+   Joint[2].Green_Blink := FALSE;
+   Joint[2].Yellow_On := FALSE;
+   Joint[2].Yellow_Blink := FALSE;
+   Joint[2].Red_On := FALSE;
+   Joint[2].Red_Blink := FALSE;
+   Joint[2].Hide := TRUE;
+   Joint[2].Spare := 16#00;
+   Joint[3].Sign_On := FALSE;
+   Joint[3].Green_On := TRUE;
+   Joint[3].Green_Blink := FALSE;
+   Joint[3].Yellow_On := FALSE;
+   Joint[3].Yellow_Blink := FALSE;
+   Joint[3].Red_On := FALSE;
+   Joint[3].Red_Blink := FALSE;
+   Joint[3].Hide := TRUE;
+   Joint[3].Spare := 16#00;
+   Joint[4].Sign_On := FALSE;
+   Joint[4].Green_On := TRUE;
+   Joint[4].Green_Blink := FALSE;
+   Joint[4].Yellow_On := FALSE;
+   Joint[4].Yellow_Blink := FALSE;
+   Joint[4].Red_On := FALSE;
+   Joint[4].Red_Blink := FALSE;
+   Joint[4].Hide := TRUE;
+   Joint[4].Spare := 16#00;
+   Joint[5].Sign_On := FALSE;
+   Joint[5].Green_On := TRUE;
+   Joint[5].Green_Blink := FALSE;
+   Joint[5].Yellow_On := FALSE;
+   Joint[5].Yellow_Blink := FALSE;
+   Joint[5].Red_On := FALSE;
+   Joint[5].Red_Blink := FALSE;
+   Joint[5].Hide := TRUE;
+   Joint[5].Spare := 16#00;
+   Joint[6].Sign_On := FALSE;
+   Joint[6].Green_On := TRUE;
+   Joint[6].Green_Blink := FALSE;
+   Joint[6].Yellow_On := FALSE;
+   Joint[6].Yellow_Blink := FALSE;
+   Joint[6].Red_On := FALSE;
+   Joint[6].Red_Blink := FALSE;
+   Joint[6].Hide := TRUE;
+   Joint[6].Spare := 16#00;
+   Joint[7].Sign_On := FALSE;
+   Joint[7].Green_On := TRUE;
+   Joint[7].Green_Blink := FALSE;
+   Joint[7].Yellow_On := FALSE;
+   Joint[7].Yellow_Blink := FALSE;
+   Joint[7].Red_On := FALSE;
+   Joint[7].Red_Blink := FALSE;
+   Joint[7].Hide := TRUE;
+   Joint[7].Spare := 16#00;
+   Joint[8].Sign_On := FALSE;
+   Joint[8].Green_On := TRUE;
+   Joint[8].Green_Blink := FALSE;
+   Joint[8].Yellow_On := FALSE;
+   Joint[8].Yellow_Blink := FALSE;
+   Joint[8].Red_On := FALSE;
+   Joint[8].Red_Blink := FALSE;
+   Joint[8].Hide := TRUE;
+   Joint[8].Spare := 16#00;
+   Joint[9].Sign_On := FALSE;
+   Joint[9].Green_On := TRUE;
+   Joint[9].Green_Blink := FALSE;
+   Joint[9].Yellow_On := FALSE;
+   Joint[9].Yellow_Blink := FALSE;
+   Joint[9].Red_On := FALSE;
+   Joint[9].Red_Blink := FALSE;
+   Joint[9].Hide := TRUE;
+   Joint[9].Spare := 16#00;
+   Joint[10].Sign_On := FALSE;
+   Joint[10].Green_On := TRUE;
+   Joint[10].Green_Blink := FALSE;
+   Joint[10].Yellow_On := FALSE;
+   Joint[10].Yellow_Blink := FALSE;
+   Joint[10].Red_On := FALSE;
+   Joint[10].Red_Blink := FALSE;
+   Joint[10].Hide := TRUE;
+   Joint[10].Spare := 16#00;
+   Joint[11].Sign_On := FALSE;
+   Joint[11].Green_On := TRUE;
+   Joint[11].Green_Blink := FALSE;
+   Joint[11].Yellow_On := FALSE;
+   Joint[11].Yellow_Blink := FALSE;
+   Joint[11].Red_On := FALSE;
+   Joint[11].Red_Blink := FALSE;
+   Joint[11].Hide := TRUE;
+   Joint[11].Spare := 16#00;
+   Joint[12].Sign_On := FALSE;
+   Joint[12].Green_On := TRUE;
+   Joint[12].Green_Blink := FALSE;
+   Joint[12].Yellow_On := FALSE;
+   Joint[12].Yellow_Blink := FALSE;
+   Joint[12].Red_On := FALSE;
+   Joint[12].Red_Blink := FALSE;
+   Joint[12].Hide := TRUE;
+   Joint[12].Spare := 16#00;
+   Joint[13].Sign_On := FALSE;
+   Joint[13].Green_On := FALSE;
+   Joint[13].Green_Blink := FALSE;
+   Joint[13].Yellow_On := FALSE;
+   Joint[13].Yellow_Blink := FALSE;
+   Joint[13].Red_On := FALSE;
+   Joint[13].Red_Blink := FALSE;
+   Joint[13].Hide := TRUE;
+   Joint[13].Spare := 16#00;
+   Joint[14].Sign_On := FALSE;
+   Joint[14].Green_On := FALSE;
+   Joint[14].Green_Blink := FALSE;
+   Joint[14].Yellow_On := FALSE;
+   Joint[14].Yellow_Blink := FALSE;
+   Joint[14].Red_On := FALSE;
+   Joint[14].Red_Blink := FALSE;
+   Joint[14].Hide := TRUE;
+   Joint[14].Spare := 16#00;
+   Joint[15].Sign_On := FALSE;
+   Joint[15].Green_On := FALSE;
+   Joint[15].Green_Blink := FALSE;
+   Joint[15].Yellow_On := FALSE;
+   Joint[15].Yellow_Blink := FALSE;
+   Joint[15].Red_On := FALSE;
+   Joint[15].Red_Blink := FALSE;
+   Joint[15].Hide := TRUE;
+   Joint[15].Spare := 16#00;
+   Joint[16].Sign_On := FALSE;
+   Joint[16].Green_On := FALSE;
+   Joint[16].Green_Blink := FALSE;
+   Joint[16].Yellow_On := FALSE;
+   Joint[16].Yellow_Blink := FALSE;
+   Joint[16].Red_On := FALSE;
+   Joint[16].Red_Blink := FALSE;
+   Joint[16].Hide := TRUE;
+   Joint[16].Spare := 16#00;
+   Joint[17].Sign_On := FALSE;
+   Joint[17].Green_On := FALSE;
+   Joint[17].Green_Blink := FALSE;
+   Joint[17].Yellow_On := FALSE;
+   Joint[17].Yellow_Blink := FALSE;
+   Joint[17].Red_On := FALSE;
+   Joint[17].Red_Blink := FALSE;
+   Joint[17].Hide := TRUE;
+   Joint[17].Spare := 16#00;
+   Joint[18].Sign_On := FALSE;
+   Joint[18].Green_On := FALSE;
+   Joint[18].Green_Blink := FALSE;
+   Joint[18].Yellow_On := FALSE;
+   Joint[18].Yellow_Blink := FALSE;
+   Joint[18].Red_On := FALSE;
+   Joint[18].Red_Blink := FALSE;
+   Joint[18].Hide := TRUE;
+   Joint[18].Spare := 16#00;
+   Joint[19].Sign_On := FALSE;
+   Joint[19].Green_On := FALSE;
+   Joint[19].Green_Blink := FALSE;
+   Joint[19].Yellow_On := FALSE;
+   Joint[19].Yellow_Blink := FALSE;
+   Joint[19].Red_On := FALSE;
+   Joint[19].Red_Blink := FALSE;
+   Joint[19].Hide := TRUE;
+   Joint[19].Spare := 16#00;
+   Joint[20].Sign_On := FALSE;
+   Joint[20].Green_On := FALSE;
+   Joint[20].Green_Blink := FALSE;
+   Joint[20].Yellow_On := FALSE;
+   Joint[20].Yellow_Blink := FALSE;
+   Joint[20].Red_On := FALSE;
+   Joint[20].Red_Blink := FALSE;
+   Joint[20].Hide := TRUE;
+   Joint[20].Spare := 16#00;
+   Joint[21].Sign_On := FALSE;
+   Joint[21].Green_On := FALSE;
+   Joint[21].Green_Blink := FALSE;
+   Joint[21].Yellow_On := FALSE;
+   Joint[21].Yellow_Blink := FALSE;
+   Joint[21].Red_On := FALSE;
+   Joint[21].Red_Blink := FALSE;
+   Joint[21].Hide := TRUE;
+   Joint[21].Spare := 16#00;
+   Joint[22].Sign_On := FALSE;
+   Joint[22].Green_On := FALSE;
+   Joint[22].Green_Blink := FALSE;
+   Joint[22].Yellow_On := FALSE;
+   Joint[22].Yellow_Blink := FALSE;
+   Joint[22].Red_On := FALSE;
+   Joint[22].Red_Blink := FALSE;
+   Joint[22].Hide := TRUE;
+   Joint[22].Spare := 16#00;
+   Joint[23].Sign_On := FALSE;
+   Joint[23].Green_On := FALSE;
+   Joint[23].Green_Blink := FALSE;
+   Joint[23].Yellow_On := FALSE;
+   Joint[23].Yellow_Blink := FALSE;
+   Joint[23].Red_On := FALSE;
+   Joint[23].Red_Blink := FALSE;
+   Joint[23].Hide := TRUE;
+   Joint[23].Spare := 16#00;
+   Joint[24].Sign_On := FALSE;
+   Joint[24].Green_On := FALSE;
+   Joint[24].Green_Blink := FALSE;
+   Joint[24].Yellow_On := FALSE;
+   Joint[24].Yellow_Blink := FALSE;
+   Joint[24].Red_On := FALSE;
+   Joint[24].Red_Blink := FALSE;
+   Joint[24].Hide := TRUE;
+   Joint[24].Spare := 16#00;
+   Joint[25].Sign_On := FALSE;
+   Joint[25].Green_On := FALSE;
+   Joint[25].Green_Blink := FALSE;
+   Joint[25].Yellow_On := FALSE;
+   Joint[25].Yellow_Blink := FALSE;
+   Joint[25].Red_On := FALSE;
+   Joint[25].Red_Blink := FALSE;
+   Joint[25].Hide := TRUE;
+   Joint[25].Spare := 16#00;
+   Joint[26].Sign_On := FALSE;
+   Joint[26].Green_On := FALSE;
+   Joint[26].Green_Blink := FALSE;
+   Joint[26].Yellow_On := FALSE;
+   Joint[26].Yellow_Blink := FALSE;
+   Joint[26].Red_On := FALSE;
+   Joint[26].Red_Blink := FALSE;
+   Joint[26].Hide := TRUE;
+   Joint[26].Spare := 16#00;
+   Joint[27].Sign_On := FALSE;
+   Joint[27].Green_On := FALSE;
+   Joint[27].Green_Blink := FALSE;
+   Joint[27].Yellow_On := FALSE;
+   Joint[27].Yellow_Blink := FALSE;
+   Joint[27].Red_On := FALSE;
+   Joint[27].Red_Blink := FALSE;
+   Joint[27].Hide := TRUE;
+   Joint[27].Spare := 16#00;
+   Joint[28].Sign_On := FALSE;
+   Joint[28].Green_On := FALSE;
+   Joint[28].Green_Blink := FALSE;
+   Joint[28].Yellow_On := FALSE;
+   Joint[28].Yellow_Blink := FALSE;
+   Joint[28].Red_On := FALSE;
+   Joint[28].Red_Blink := FALSE;
+   Joint[28].Hide := TRUE;
+   Joint[28].Spare := 16#00;
+   Joint[29].Sign_On := FALSE;
+   Joint[29].Green_On := FALSE;
+   Joint[29].Green_Blink := FALSE;
+   Joint[29].Yellow_On := FALSE;
+   Joint[29].Yellow_Blink := FALSE;
+   Joint[29].Red_On := FALSE;
+   Joint[29].Red_Blink := FALSE;
+   Joint[29].Hide := TRUE;
+   Joint[29].Spare := 16#00;
+   Joint[30].Sign_On := FALSE;
+   Joint[30].Green_On := FALSE;
+   Joint[30].Green_Blink := FALSE;
+   Joint[30].Yellow_On := FALSE;
+   Joint[30].Yellow_Blink := FALSE;
+   Joint[30].Red_On := FALSE;
+   Joint[30].Red_Blink := FALSE;
+   Joint[30].Hide := TRUE;
+   Joint[30].Spare := 16#00;
+   Joint[31].Sign_On := FALSE;
+   Joint[31].Green_On := FALSE;
+   Joint[31].Green_Blink := FALSE;
+   Joint[31].Yellow_On := FALSE;
+   Joint[31].Yellow_Blink := FALSE;
+   Joint[31].Red_On := FALSE;
+   Joint[31].Red_Blink := FALSE;
+   Joint[31].Hide := TRUE;
+   Joint[31].Spare := 16#00;
+   Joint[32].Sign_On := FALSE;
+   Joint[32].Green_On := FALSE;
+   Joint[32].Green_Blink := FALSE;
+   Joint[32].Yellow_On := FALSE;
+   Joint[32].Yellow_Blink := FALSE;
+   Joint[32].Red_On := FALSE;
+   Joint[32].Red_Blink := FALSE;
+   Joint[32].Hide := TRUE;
+   Joint[32].Spare := 16#00;
+   Joint[33].Sign_On := FALSE;
+   Joint[33].Green_On := FALSE;
+   Joint[33].Green_Blink := FALSE;
+   Joint[33].Yellow_On := FALSE;
+   Joint[33].Yellow_Blink := FALSE;
+   Joint[33].Red_On := FALSE;
+   Joint[33].Red_Blink := FALSE;
+   Joint[33].Hide := TRUE;
+   Joint[33].Spare := 16#00;
+   Joint[34].Sign_On := FALSE;
+   Joint[34].Green_On := FALSE;
+   Joint[34].Green_Blink := FALSE;
+   Joint[34].Yellow_On := FALSE;
+   Joint[34].Yellow_Blink := FALSE;
+   Joint[34].Red_On := FALSE;
+   Joint[34].Red_Blink := FALSE;
+   Joint[34].Hide := TRUE;
+   Joint[34].Spare := 16#00;
+   Joint[35].Sign_On := FALSE;
+   Joint[35].Green_On := FALSE;
+   Joint[35].Green_Blink := FALSE;
+   Joint[35].Yellow_On := FALSE;
+   Joint[35].Yellow_Blink := FALSE;
+   Joint[35].Red_On := FALSE;
+   Joint[35].Red_Blink := FALSE;
+   Joint[35].Hide := TRUE;
+   Joint[35].Spare := 16#00;
+   Joint[36].Sign_On := FALSE;
+   Joint[36].Green_On := FALSE;
+   Joint[36].Green_Blink := FALSE;
+   Joint[36].Yellow_On := FALSE;
+   Joint[36].Yellow_Blink := FALSE;
+   Joint[36].Red_On := FALSE;
+   Joint[36].Red_Blink := FALSE;
+   Joint[36].Hide := TRUE;
+   Joint[36].Spare := 16#00;
+   Joint[37].Sign_On := FALSE;
+   Joint[37].Green_On := FALSE;
+   Joint[37].Green_Blink := FALSE;
+   Joint[37].Yellow_On := FALSE;
+   Joint[37].Yellow_Blink := FALSE;
+   Joint[37].Red_On := FALSE;
+   Joint[37].Red_Blink := FALSE;
+   Joint[37].Hide := TRUE;
+   Joint[37].Spare := 16#00;
+   Joint[38].Sign_On := FALSE;
+   Joint[38].Green_On := FALSE;
+   Joint[38].Green_Blink := FALSE;
+   Joint[38].Yellow_On := FALSE;
+   Joint[38].Yellow_Blink := FALSE;
+   Joint[38].Red_On := FALSE;
+   Joint[38].Red_Blink := FALSE;
+   Joint[38].Hide := TRUE;
+   Joint[38].Spare := 16#00;
+   Joint[39].Sign_On := FALSE;
+   Joint[39].Green_On := FALSE;
+   Joint[39].Green_Blink := FALSE;
+   Joint[39].Yellow_On := FALSE;
+   Joint[39].Yellow_Blink := FALSE;
+   Joint[39].Red_On := FALSE;
+   Joint[39].Red_Blink := FALSE;
+   Joint[39].Hide := TRUE;
+   Joint[39].Spare := 16#00;
+   Joint[40].Sign_On := FALSE;
+   Joint[40].Green_On := FALSE;
+   Joint[40].Green_Blink := FALSE;
+   Joint[40].Yellow_On := FALSE;
+   Joint[40].Yellow_Blink := FALSE;
+   Joint[40].Red_On := FALSE;
+   Joint[40].Red_Blink := FALSE;
+   Joint[40].Hide := TRUE;
+   Joint[40].Spare := 16#00;
+   Led_LH[1].Green_On := FALSE;
+   Led_LH[1].Green_Blink := FALSE;
+   Led_LH[1].Yellow_On := FALSE;
+   Led_LH[1].Yellow_Blink := FALSE;
+   Led_LH[1].Red_On := FALSE;
+   Led_LH[1].Red_Blink := FALSE;
+   Led_LH[1].Spare_1 := FALSE;
+   Led_LH[1].Hide := TRUE;
+   Led_LH[2].Green_On := FALSE;
+   Led_LH[2].Green_Blink := FALSE;
+   Led_LH[2].Yellow_On := FALSE;
+   Led_LH[2].Yellow_Blink := FALSE;
+   Led_LH[2].Red_On := FALSE;
+   Led_LH[2].Red_Blink := FALSE;
+   Led_LH[2].Spare_1 := FALSE;
+   Led_LH[2].Hide := TRUE;
+   Led_LH[3].Green_On := FALSE;
+   Led_LH[3].Green_Blink := FALSE;
+   Led_LH[3].Yellow_On := FALSE;
+   Led_LH[3].Yellow_Blink := FALSE;
+   Led_LH[3].Red_On := FALSE;
+   Led_LH[3].Red_Blink := FALSE;
+   Led_LH[3].Spare_1 := FALSE;
+   Led_LH[3].Hide := TRUE;
+   Led_LH[4].Green_On := FALSE;
+   Led_LH[4].Green_Blink := FALSE;
+   Led_LH[4].Yellow_On := FALSE;
+   Led_LH[4].Yellow_Blink := FALSE;
+   Led_LH[4].Red_On := FALSE;
+   Led_LH[4].Red_Blink := FALSE;
+   Led_LH[4].Spare_1 := FALSE;
+   Led_LH[4].Hide := TRUE;
+   Led_LH[5].Green_On := FALSE;
+   Led_LH[5].Green_Blink := FALSE;
+   Led_LH[5].Yellow_On := FALSE;
+   Led_LH[5].Yellow_Blink := FALSE;
+   Led_LH[5].Red_On := FALSE;
+   Led_LH[5].Red_Blink := FALSE;
+   Led_LH[5].Spare_1 := FALSE;
+   Led_LH[5].Hide := TRUE;
+   Led_LH[6].Green_On := FALSE;
+   Led_LH[6].Green_Blink := FALSE;
+   Led_LH[6].Yellow_On := FALSE;
+   Led_LH[6].Yellow_Blink := FALSE;
+   Led_LH[6].Red_On := FALSE;
+   Led_LH[6].Red_Blink := FALSE;
+   Led_LH[6].Spare_1 := FALSE;
+   Led_LH[6].Hide := TRUE;
+   Led_LH[7].Green_On := FALSE;
+   Led_LH[7].Green_Blink := FALSE;
+   Led_LH[7].Yellow_On := FALSE;
+   Led_LH[7].Yellow_Blink := FALSE;
+   Led_LH[7].Red_On := FALSE;
+   Led_LH[7].Red_Blink := FALSE;
+   Led_LH[7].Spare_1 := FALSE;
+   Led_LH[7].Hide := TRUE;
+   Led_LH[8].Green_On := FALSE;
+   Led_LH[8].Green_Blink := FALSE;
+   Led_LH[8].Yellow_On := FALSE;
+   Led_LH[8].Yellow_Blink := FALSE;
+   Led_LH[8].Red_On := FALSE;
+   Led_LH[8].Red_Blink := FALSE;
+   Led_LH[8].Spare_1 := FALSE;
+   Led_LH[8].Hide := TRUE;
+   Led_LH[9].Green_On := FALSE;
+   Led_LH[9].Green_Blink := FALSE;
+   Led_LH[9].Yellow_On := FALSE;
+   Led_LH[9].Yellow_Blink := FALSE;
+   Led_LH[9].Red_On := FALSE;
+   Led_LH[9].Red_Blink := FALSE;
+   Led_LH[9].Spare_1 := FALSE;
+   Led_LH[9].Hide := TRUE;
+   Led_LH[10].Green_On := FALSE;
+   Led_LH[10].Green_Blink := FALSE;
+   Led_LH[10].Yellow_On := FALSE;
+   Led_LH[10].Yellow_Blink := FALSE;
+   Led_LH[10].Red_On := FALSE;
+   Led_LH[10].Red_Blink := FALSE;
+   Led_LH[10].Spare_1 := FALSE;
+   Led_LH[10].Hide := TRUE;
+   Led_RH[1].Green_On := FALSE;
+   Led_RH[1].Green_Blink := FALSE;
+   Led_RH[1].Yellow_On := FALSE;
+   Led_RH[1].Yellow_Blink := FALSE;
+   Led_RH[1].Red_On := FALSE;
+   Led_RH[1].Red_Blink := FALSE;
+   Led_RH[1].Spare_1 := FALSE;
+   Led_RH[1].Hide := TRUE;
+   Led_RH[2].Green_On := FALSE;
+   Led_RH[2].Green_Blink := FALSE;
+   Led_RH[2].Yellow_On := FALSE;
+   Led_RH[2].Yellow_Blink := FALSE;
+   Led_RH[2].Red_On := FALSE;
+   Led_RH[2].Red_Blink := FALSE;
+   Led_RH[2].Spare_1 := FALSE;
+   Led_RH[2].Hide := TRUE;
+   Led_RH[3].Green_On := FALSE;
+   Led_RH[3].Green_Blink := FALSE;
+   Led_RH[3].Yellow_On := FALSE;
+   Led_RH[3].Yellow_Blink := FALSE;
+   Led_RH[3].Red_On := FALSE;
+   Led_RH[3].Red_Blink := FALSE;
+   Led_RH[3].Spare_1 := FALSE;
+   Led_RH[3].Hide := TRUE;
+   Led_RH[4].Green_On := FALSE;
+   Led_RH[4].Green_Blink := FALSE;
+   Led_RH[4].Yellow_On := FALSE;
+   Led_RH[4].Yellow_Blink := FALSE;
+   Led_RH[4].Red_On := FALSE;
+   Led_RH[4].Red_Blink := FALSE;
+   Led_RH[4].Spare_1 := FALSE;
+   Led_RH[4].Hide := TRUE;
+   Led_RH[5].Green_On := FALSE;
+   Led_RH[5].Green_Blink := FALSE;
+   Led_RH[5].Yellow_On := FALSE;
+   Led_RH[5].Yellow_Blink := FALSE;
+   Led_RH[5].Red_On := FALSE;
+   Led_RH[5].Red_Blink := FALSE;
+   Led_RH[5].Spare_1 := FALSE;
+   Led_RH[5].Hide := TRUE;
+   Led_RH[6].Green_On := FALSE;
+   Led_RH[6].Green_Blink := FALSE;
+   Led_RH[6].Yellow_On := FALSE;
+   Led_RH[6].Yellow_Blink := FALSE;
+   Led_RH[6].Red_On := FALSE;
+   Led_RH[6].Red_Blink := FALSE;
+   Led_RH[6].Spare_1 := FALSE;
+   Led_RH[6].Hide := TRUE;
+   Led_RH[7].Green_On := FALSE;
+   Led_RH[7].Green_Blink := FALSE;
+   Led_RH[7].Yellow_On := FALSE;
+   Led_RH[7].Yellow_Blink := FALSE;
+   Led_RH[7].Red_On := FALSE;
+   Led_RH[7].Red_Blink := FALSE;
+   Led_RH[7].Spare_1 := FALSE;
+   Led_RH[7].Hide := TRUE;
+   Led_RH[8].Green_On := FALSE;
+   Led_RH[8].Green_Blink := FALSE;
+   Led_RH[8].Yellow_On := FALSE;
+   Led_RH[8].Yellow_Blink := FALSE;
+   Led_RH[8].Red_On := FALSE;
+   Led_RH[8].Red_Blink := FALSE;
+   Led_RH[8].Spare_1 := FALSE;
+   Led_RH[8].Hide := TRUE;
+   Led_RH[9].Green_On := FALSE;
+   Led_RH[9].Green_Blink := FALSE;
+   Led_RH[9].Yellow_On := FALSE;
+   Led_RH[9].Yellow_Blink := FALSE;
+   Led_RH[9].Red_On := FALSE;
+   Led_RH[9].Red_Blink := FALSE;
+   Led_RH[9].Spare_1 := FALSE;
+   Led_RH[9].Hide := TRUE;
+   Led_RH[10].Green_On := FALSE;
+   Led_RH[10].Green_Blink := FALSE;
+   Led_RH[10].Yellow_On := FALSE;
+   Led_RH[10].Yellow_Blink := FALSE;
+   Led_RH[10].Red_On := FALSE;
+   Led_RH[10].Red_Blink := FALSE;
+   Led_RH[10].Spare_1 := FALSE;
+   Led_RH[10].Hide := TRUE;
+   Variant[1].Visible_Box := FALSE;
+   Variant[1].Selected := FALSE;
+   Variant[1].Blink_Box := FALSE;
+   Variant[1].Visible_CC := FALSE;
+   Variant[1].Visible_PN := FALSE;
+   Variant[1].Visible_SN := FALSE;
+   Variant[1].Spare_9 := FALSE;
+   Variant[1].Spare_10 := FALSE;
+   Variant[1].Spare_11 := FALSE;
+   Variant[1].Spare_12 := FALSE;
+   Variant[1].Spare_13 := FALSE;
+   Variant[1].Spare_14 := FALSE;
+   Variant[1].Spare_15 := FALSE;
+   Variant[1].Spare_16 := FALSE;
+   Variant[1].Box := 0;
+   Variant[1].CC_Green_On := FALSE;
+   Variant[1].CC_Green_Blink := FALSE;
+   Variant[1].CC_Yellow_On := FALSE;
+   Variant[1].CC_Yellow_Blink := FALSE;
+   Variant[1].CC_Red_On := FALSE;
+   Variant[1].CC_Red_Blink := FALSE;
+   Variant[1].CC_Spare_1 := FALSE;
+   Variant[1].CC_Spare_2 := FALSE;
+   Variant[1].PN_Yellow_On := FALSE;
+   Variant[1].PN_Yellow_Blink := FALSE;
+   Variant[1].PN_Red_On := FALSE;
+   Variant[1].PN_Red_Blink := FALSE;
+   Variant[1].PN_Spare_1 := FALSE;
+   Variant[1].PN_Spare_2 := FALSE;
+   Variant[1].SN_Green_On := FALSE;
+   Variant[1].SN_Green_Blink := FALSE;
+   Variant[1].SN_Yellow_On := FALSE;
+   Variant[1].SN_Yellow_Blink := FALSE;
+   Variant[1].SN_Red_On := FALSE;
+   Variant[1].SN_Red_Blink := FALSE;
+   Variant[1].SN_Spare_1 := FALSE;
+   Variant[1].SN_Spare_2 := FALSE;
+   Variant[1].Spare := 16#00;
+   Variant[2].Visible_Box := FALSE;
+   Variant[2].Selected := FALSE;
+   Variant[2].Blink_Box := FALSE;
+   Variant[2].Visible_CC := FALSE;
+   Variant[2].Visible_PN := FALSE;
+   Variant[2].Visible_SN := FALSE;
+   Variant[2].Spare_9 := FALSE;
+   Variant[2].Spare_10 := FALSE;
+   Variant[2].Spare_11 := FALSE;
+   Variant[2].Spare_12 := FALSE;
+   Variant[2].Spare_13 := FALSE;
+   Variant[2].Spare_14 := FALSE;
+   Variant[2].Spare_15 := FALSE;
+   Variant[2].Spare_16 := FALSE;
+   Variant[2].Box := 0;
+   Variant[2].CC_Green_On := FALSE;
+   Variant[2].CC_Green_Blink := FALSE;
+   Variant[2].CC_Yellow_On := FALSE;
+   Variant[2].CC_Yellow_Blink := FALSE;
+   Variant[2].CC_Red_On := FALSE;
+   Variant[2].CC_Red_Blink := FALSE;
+   Variant[2].CC_Spare_1 := FALSE;
+   Variant[2].CC_Spare_2 := FALSE;
+   Variant[2].PN_Yellow_On := FALSE;
+   Variant[2].PN_Yellow_Blink := FALSE;
+   Variant[2].PN_Red_On := FALSE;
+   Variant[2].PN_Red_Blink := FALSE;
+   Variant[2].PN_Spare_1 := FALSE;
+   Variant[2].PN_Spare_2 := FALSE;
+   Variant[2].SN_Green_On := FALSE;
+   Variant[2].SN_Green_Blink := FALSE;
+   Variant[2].SN_Yellow_On := FALSE;
+   Variant[2].SN_Yellow_Blink := FALSE;
+   Variant[2].SN_Red_On := FALSE;
+   Variant[2].SN_Red_Blink := FALSE;
+   Variant[2].SN_Spare_1 := FALSE;
+   Variant[2].SN_Spare_2 := FALSE;
+   Variant[2].Spare := 16#00;
+   Variant[3].Visible_Box := FALSE;
+   Variant[3].Selected := FALSE;
+   Variant[3].Blink_Box := FALSE;
+   Variant[3].Visible_CC := FALSE;
+   Variant[3].Visible_PN := FALSE;
+   Variant[3].Visible_SN := FALSE;
+   Variant[3].Spare_9 := FALSE;
+   Variant[3].Spare_10 := FALSE;
+   Variant[3].Spare_11 := FALSE;
+   Variant[3].Spare_12 := FALSE;
+   Variant[3].Spare_13 := FALSE;
+   Variant[3].Spare_14 := FALSE;
+   Variant[3].Spare_15 := FALSE;
+   Variant[3].Spare_16 := FALSE;
+   Variant[3].Box := 0;
+   Variant[3].CC_Green_On := FALSE;
+   Variant[3].CC_Green_Blink := FALSE;
+   Variant[3].CC_Yellow_On := FALSE;
+   Variant[3].CC_Yellow_Blink := FALSE;
+   Variant[3].CC_Red_On := FALSE;
+   Variant[3].CC_Red_Blink := FALSE;
+   Variant[3].CC_Spare_1 := FALSE;
+   Variant[3].CC_Spare_2 := FALSE;
+   Variant[3].PN_Yellow_On := FALSE;
+   Variant[3].PN_Yellow_Blink := FALSE;
+   Variant[3].PN_Red_On := FALSE;
+   Variant[3].PN_Red_Blink := FALSE;
+   Variant[3].PN_Spare_1 := FALSE;
+   Variant[3].PN_Spare_2 := FALSE;
+   Variant[3].SN_Green_On := FALSE;
+   Variant[3].SN_Green_Blink := FALSE;
+   Variant[3].SN_Yellow_On := FALSE;
+   Variant[3].SN_Yellow_Blink := FALSE;
+   Variant[3].SN_Red_On := FALSE;
+   Variant[3].SN_Red_Blink := FALSE;
+   Variant[3].SN_Spare_1 := FALSE;
+   Variant[3].SN_Spare_2 := FALSE;
+   Variant[3].Spare := 16#00;
+   Variant[4].Visible_Box := FALSE;
+   Variant[4].Selected := FALSE;
+   Variant[4].Blink_Box := FALSE;
+   Variant[4].Visible_CC := FALSE;
+   Variant[4].Visible_PN := FALSE;
+   Variant[4].Visible_SN := FALSE;
+   Variant[4].Spare_9 := FALSE;
+   Variant[4].Spare_10 := FALSE;
+   Variant[4].Spare_11 := FALSE;
+   Variant[4].Spare_12 := FALSE;
+   Variant[4].Spare_13 := FALSE;
+   Variant[4].Spare_14 := FALSE;
+   Variant[4].Spare_15 := FALSE;
+   Variant[4].Spare_16 := FALSE;
+   Variant[4].Box := 0;
+   Variant[4].CC_Green_On := FALSE;
+   Variant[4].CC_Green_Blink := FALSE;
+   Variant[4].CC_Yellow_On := FALSE;
+   Variant[4].CC_Yellow_Blink := FALSE;
+   Variant[4].CC_Red_On := FALSE;
+   Variant[4].CC_Red_Blink := FALSE;
+   Variant[4].CC_Spare_1 := FALSE;
+   Variant[4].CC_Spare_2 := FALSE;
+   Variant[4].PN_Yellow_On := FALSE;
+   Variant[4].PN_Yellow_Blink := FALSE;
+   Variant[4].PN_Red_On := FALSE;
+   Variant[4].PN_Red_Blink := FALSE;
+   Variant[4].PN_Spare_1 := FALSE;
+   Variant[4].PN_Spare_2 := FALSE;
+   Variant[4].SN_Green_On := FALSE;
+   Variant[4].SN_Green_Blink := FALSE;
+   Variant[4].SN_Yellow_On := FALSE;
+   Variant[4].SN_Yellow_Blink := FALSE;
+   Variant[4].SN_Red_On := FALSE;
+   Variant[4].SN_Red_Blink := FALSE;
+   Variant[4].SN_Spare_1 := FALSE;
+   Variant[4].SN_Spare_2 := FALSE;
+   Variant[4].Spare := 16#00;
+   Variant[5].Visible_Box := FALSE;
+   Variant[5].Selected := FALSE;
+   Variant[5].Blink_Box := FALSE;
+   Variant[5].Visible_CC := FALSE;
+   Variant[5].Visible_PN := FALSE;
+   Variant[5].Visible_SN := FALSE;
+   Variant[5].Spare_9 := FALSE;
+   Variant[5].Spare_10 := FALSE;
+   Variant[5].Spare_11 := FALSE;
+   Variant[5].Spare_12 := FALSE;
+   Variant[5].Spare_13 := FALSE;
+   Variant[5].Spare_14 := FALSE;
+   Variant[5].Spare_15 := FALSE;
+   Variant[5].Spare_16 := FALSE;
+   Variant[5].Box := 0;
+   Variant[5].CC_Green_On := FALSE;
+   Variant[5].CC_Green_Blink := FALSE;
+   Variant[5].CC_Yellow_On := FALSE;
+   Variant[5].CC_Yellow_Blink := FALSE;
+   Variant[5].CC_Red_On := FALSE;
+   Variant[5].CC_Red_Blink := FALSE;
+   Variant[5].CC_Spare_1 := FALSE;
+   Variant[5].CC_Spare_2 := FALSE;
+   Variant[5].PN_Yellow_On := FALSE;
+   Variant[5].PN_Yellow_Blink := FALSE;
+   Variant[5].PN_Red_On := FALSE;
+   Variant[5].PN_Red_Blink := FALSE;
+   Variant[5].PN_Spare_1 := FALSE;
+   Variant[5].PN_Spare_2 := FALSE;
+   Variant[5].SN_Green_On := FALSE;
+   Variant[5].SN_Green_Blink := FALSE;
+   Variant[5].SN_Yellow_On := FALSE;
+   Variant[5].SN_Yellow_Blink := FALSE;
+   Variant[5].SN_Red_On := FALSE;
+   Variant[5].SN_Red_Blink := FALSE;
+   Variant[5].SN_Spare_1 := FALSE;
+   Variant[5].SN_Spare_2 := FALSE;
+   Variant[5].Spare := 16#00;
+   Variant[6].Visible_Box := FALSE;
+   Variant[6].Selected := FALSE;
+   Variant[6].Blink_Box := FALSE;
+   Variant[6].Visible_CC := FALSE;
+   Variant[6].Visible_PN := FALSE;
+   Variant[6].Visible_SN := FALSE;
+   Variant[6].Spare_9 := FALSE;
+   Variant[6].Spare_10 := FALSE;
+   Variant[6].Spare_11 := FALSE;
+   Variant[6].Spare_12 := FALSE;
+   Variant[6].Spare_13 := FALSE;
+   Variant[6].Spare_14 := FALSE;
+   Variant[6].Spare_15 := FALSE;
+   Variant[6].Spare_16 := FALSE;
+   Variant[6].Box := 0;
+   Variant[6].CC_Green_On := FALSE;
+   Variant[6].CC_Green_Blink := FALSE;
+   Variant[6].CC_Yellow_On := FALSE;
+   Variant[6].CC_Yellow_Blink := FALSE;
+   Variant[6].CC_Red_On := FALSE;
+   Variant[6].CC_Red_Blink := FALSE;
+   Variant[6].CC_Spare_1 := FALSE;
+   Variant[6].CC_Spare_2 := FALSE;
+   Variant[6].PN_Yellow_On := FALSE;
+   Variant[6].PN_Yellow_Blink := FALSE;
+   Variant[6].PN_Red_On := FALSE;
+   Variant[6].PN_Red_Blink := FALSE;
+   Variant[6].PN_Spare_1 := FALSE;
+   Variant[6].PN_Spare_2 := FALSE;
+   Variant[6].SN_Green_On := FALSE;
+   Variant[6].SN_Green_Blink := FALSE;
+   Variant[6].SN_Yellow_On := FALSE;
+   Variant[6].SN_Yellow_Blink := FALSE;
+   Variant[6].SN_Red_On := FALSE;
+   Variant[6].SN_Red_Blink := FALSE;
+   Variant[6].SN_Spare_1 := FALSE;
+   Variant[6].SN_Spare_2 := FALSE;
+   Variant[6].Spare := 16#00;
+   Pannel_Position_X := 1000;
+   Pannel_Position_Y := 710;
+   Sign_Position_X := 907;
+   Sign_Position_Y := 370;
+   Cycle_Time := 0;
+   Spare1 := 0;
+
+END_DATA_BLOCK
+

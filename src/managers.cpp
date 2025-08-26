@@ -5,10 +5,7 @@
 #include <thread>
 #include <profi_DCP.hpp>
 
-/*-------------------------------------------------------*/
-/*------------------- Network Manager -------------------*/ 
-/*-------------------------------------------------------*/
-
+/* ---------------- Network Manager ---------------- */
 
 /// Constructor that initializes the Profinet client for network operations.
 NetManager::NetManager()
@@ -63,12 +60,8 @@ void NetManager::set_netCard(std::string card){network.set_card(card);};
 
 
 void NetManager::set_ip(std::string ip) { ip_selected = ip;}
-/*-------------------------------------------------------------------------------------*/
 
-
-/*-------------------------------------------------------*/
-/*------------------ Database Manager -------------------*/ 
-/*-------------------------------------------------------*/
+/* ---------------- Database Manager ---------------- */
 
 /// Parses and builds a new database object from the selected file path using the grammar parser.
 void DatabaseManager::create_db() 
@@ -114,27 +107,22 @@ void DatabaseManager::set_db_scope(DbInfo key){db_scope = key;create_db();}
 /// Loads raw PLC data into the database object for interpretation.
 void DatabaseManager::set_db_data(const std::vector<unsigned char> buffer){database->_set_data(buffer);}
 
-/*-------------------------------------------------------------------------------------*/
 
-
-/*-------------------------------------------------------*/
 /*------------------- Filter Manager --------------------*/ 
-/*-------------------------------------------------------*/
 
 /// Applies a filter operation to the current database using the provided filter element.
 /// Possibilities of filter are Value, name or both togheter, more filter will be implemented in future
-void FilterManager::set_mode(Filter::filterElem f_el)
+void FilterManager::set_mode(std::shared_ptr<DB> db_ptr){ if(filter == nullptr) filter =std::make_unique<Filter::FilterDB>(db_ptr); filter->find_el(&filters);}
+
+void FilterManager::reset_mode()
 {
-
-    filter_ptr = Filter::Do_Filter(&f_el);
-    if(filter_ptr != nullptr)
-    {
-        filter_ptr->set_filter(db_ptr);
-    }
+    if(filter != nullptr)filter->resetAll() ;
+    filters.bool_el.reset();
+    filters.comment.reset();
+    filters.name.reset();
+    filters.value_in.reset();
 }
-
-/// Sets the database pointer to be used as the target for filtering operations.
-void FilterManager::set_dbPtr(std::shared_ptr<DB> ptr){db_ptr = ptr;};
+Filter::filterElem* FilterManager::get_filter(){ return &filters; };
 
 /*-------------------------------------------------------------------------------------*/
 
@@ -162,8 +150,4 @@ _folder_ CommManager::get_directory(){return folders::get_instances();};
 void CommManager::set_plc_data(){NetMan.plc_data_retrieve(DataMan.get_db_default_number(),DataMan.get_db_size(),&buffer);}
 
 /// Applies a filtering mode to the database through the FilterManager.
-void CommManager::set_filter_mode(Filter::filterElem f_el)
-{
-    FilMan.set_dbPtr(DataMan.get_db());
-    FilMan.set_mode(f_el);
-}
+void CommManager::set_filter_mode(){ FilMan.set_mode(DataMan.get_db()); }

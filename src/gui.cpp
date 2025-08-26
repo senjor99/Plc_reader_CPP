@@ -11,13 +11,6 @@ MainGUIController::MainGUIController()
         _FilterBar(std::make_unique<FilterBar>(this))
         {};
 
-/// \brief Applies the current filter settings to the database view.
-/// \details Delegates to CommManager, which passes the filter to FilterManager.
-void MainGUIController::activate_filter()
-{
-    CommMan->set_filter_mode(_FilterBar->get_filter_status());
-};
-
 /// \brief Lays out and draws the main UI: header, optional filter bar, and body.
 /// \details Creates a layout with margins, draws header and filter (if DB loaded),
 /// and then draws the file explorer and data viewer panes.
@@ -145,17 +138,10 @@ void ConnectionBar::Draw() {
     ImGui::SetNextItemWidth(400);
     DrawDeviceCombo();
 
-    //ImGui::SameLine();
-    //ImGui::SetNextItemWidth(200);
-    //DrawDbCombo();
-
     ImGui::SameLine();
     ImGui::SetNextItemWidth(100);
     DrawDbNr();
 
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(200);
-    
     ImGui::SameLine();
     ImGui::SetNextItemWidth(200);
     DrawNetCardCombo();
@@ -163,11 +149,13 @@ void ConnectionBar::Draw() {
     
     static char buffer[256];
     ImVec2 curs = ImGui::GetCursorPos();
-    
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(200);
-    if (ImGui::Button("Refresh Devices")) {
-        this_controller->CommMan->NetMan.scan_network();
+    if(card_combo_name != "Select Adapter") 
+    {
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(200);
+        if (ImGui::Button("Refresh Devices")) {
+            this_controller->CommMan->NetMan.scan_network();
+        }
     }
 
     ImGui::SameLine();
@@ -190,90 +178,66 @@ FilterBar::FilterBar(MainGUIController* controller)
 /// \brief Toggles filter on/off and resets values when turning off.
 void FilterBar::activate(){ active = !active; }
 
-/// \brief Returns the current filter element (mode + optional name/value).
-Filter::filterElem FilterBar::get_filter_status() const { return f_el; }
-    
-/// \brief Human-readable label for the current filter mode.
-const char* FilterBar::mode_label(Mode m) 
-{
-    switch(m){
-        case Mode::None:      return "None";
-        case Mode::Value:     return "Value";
-        case Mode::Name:      return "Name";
-        case Mode::ValueName: return "Value-Name";
-    }
-    return "";
-}
-
 /// \brief Draws the filter UI (mode picker, inputs) and applies the filter.
 /// \details When disabled, clears the filter; otherwise updates f_el and triggers apply.
 void FilterBar::draw()
 {
-   
-
+    auto* f_el = this_controller->CommMan->FilMan.get_filter();
+    
     const char* btn = active ? "Unfilter" : "Filter";
     if (ImGui::Button(btn)) activate();
+
     ImGui::SameLine();
+    
     if (!active) {
-        f_el.value_in.reset();
-        f_el.name.reset();
-        this_controller->activate_filter();
-        mode = Mode::None;
+        
+        this_controller->CommMan->FilMan.reset_mode();
         return;
     }
 
-    ImGui::SetNextItemWidth(120);
-    if (ImGui::BeginCombo("Filter by", mode_label(mode))) {
-        auto pick = [&](Mode m){
-            bool sel = (mode == m);
-            if (ImGui::Selectable(mode_label(m), sel)) mode = m;
-            if (sel) ImGui::SetItemDefaultFocus();
-        };
-        pick(Mode::None);
-        pick(Mode::Value);
-        pick(Mode::Name);
-        pick(Mode::ValueName);
-        ImGui::EndCombo();
+    ImGui::SameLine();
+
+    ImGui::SetNextItemWidth(140);
+    if (ImGui::InputText("Value", value_buf.data(), (int)value_buf.size())) {
+        std::string v = value_buf.data();
+        if(v.find("/bool:") != v.npos) v = v.substr(v.find(":")+1,v.size());
+
+        Value v_;
+        v_ = translate::parse_type(v);
+        if (std::holds_alternative<std::string>(v_) && v != "" || std::holds_alternative<int>(v_))
+        {
+            f_el->value_in  = v_;
+            f_el->bool_el.reset();
+        }
+
+        else if(std::holds_alternative<bool>(v_))
+        {
+            f_el->value_in.reset();
+            f_el->bool_el = std::get<bool>(v_);
+        }
+        else if( v == "" ) f_el->value_in.reset();
+    }   
+
+    
+    ImGui::SameLine();
+
+    ImGui::SetNextItemWidth(140);
+    if (ImGui::InputText("Name", name_buf.data(), (int)name_buf.size())) {
+        std::string n = name_buf.data();
+        if(n == "") f_el->name.reset();
+        else f_el->name  = n;
     }
 
     ImGui::SameLine();
 
-    bool needValue = (mode == Mode::Value || mode == Mode::ValueName);
-    bool needName  = (mode == Mode::Name  || mode == Mode::ValueName);
-
-    if (needValue) 
-    {
-        ImGui::SetNextItemWidth(140);
-        if (ImGui::InputText("Value", value_buf.data(), (int)value_buf.size())) {
-            std::string s_ = value_buf.data();
-            Value v_ = translate::parse_type(s_);  
-            if (s_ != "") f_el.value_in  = v_;
-            else f_el.value_in.reset();
-        }
-    } 
-
-    ImGui::SameLine();
-
-    if (needName) 
-    {
-        ImGui::SetNextItemWidth(140);
-        if (ImGui::InputText("Name", name_buf.data(), (int)name_buf.size())) {
-            std::string s = name_buf.data();
-            if (s != "")f_el.name  = s;
-            else f_el.name.reset();
-        }
-    } 
-
-    ImGui::SameLine();
-
-    bool any_active = false;
-    switch (mode) {
-        case Mode::None:      any_active = false; break;
-        case Mode::Value:     any_active = f_el.value_in.has_value(); break;
-        case Mode::Name:      any_active = f_el.name.has_value(); break;
-        case Mode::ValueName: any_active = f_el.value_in.has_value() || f_el.name.has_value(); break;
+    ImGui::SetNextItemWidth(140);
+    if (ImGui::InputText("Comment", comment_buf.data(), (int)comment_buf.size())) {
+        std::string c = comment_buf.data();
+        if(c == "") f_el->comment.reset();
+        else f_el->comment  = c;
     }
-    this_controller->activate_filter();
+
+    this_controller->CommMan->set_filter_mode();
 }
 
 /// \brief Main content body: explorer (projects/files) and DB viewer trees.

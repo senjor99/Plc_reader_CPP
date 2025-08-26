@@ -141,6 +141,9 @@ namespace Filter
     {
         std::optional<Value> value_in;
         std::optional<std::string> name;
+        std::optional<std::string> comment;
+        std::optional<bool> bool_el;
+        void reset();
     };
 };
 
@@ -149,5 +152,8 @@ using Offset = std::pair<int, int>;
 
 enum class Mode { None, Value, Name, ValueName };
 
-
 std::string to_lowercase(std::string s);
+
+template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+
+template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;

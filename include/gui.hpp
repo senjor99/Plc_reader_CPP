@@ -54,17 +54,12 @@ class FilterBar {
     protected:
         
         bool active = false;
-        Mode mode = Mode::None;
     
         std::array<char,128> value_buf{};  
         std::array<char,128> name_buf{};   
-        std::vector<std::string> udt_keys;
+        std::array<char,128> comment_buf{};   
     
-        Filter::filterElem f_el;
         MainGUIController* this_controller;
-    
-        // helper
-        static const char* mode_label(Mode m);
 
     public:
         FilterBar() = default;    
@@ -94,7 +89,6 @@ public:
     MainGUIController();
 
     void draw();
-    void activate_filter();
 
     std::unique_ptr<DrawingInfo> cursor;
     std::unique_ptr<ConnectionBar> upper_bar ;

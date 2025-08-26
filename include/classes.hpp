@@ -51,15 +51,17 @@ class BASE : public Element
     protected:
     std::string name;
     std::string type; 
+    std::string comment = "xyz";
     std::pair<int, int> offset; 
     Value data = "-";
-
+    
     public:
     BASE() = default;
     BASE(std::string name_in, std::string type_in);
     
     std::string get_name() const;
     std::string get_type() const;
+    std::string get_comment() const;
     std::pair<int,int> get_offset() const;
     Value get_data()const;
     bool get_vis() override;
@@ -303,56 +305,22 @@ namespace Filter
 {
 
     template <class Pred>
-    static bool walk_set_vis(VariantElement el, Pred pred);
+    static bool walk_set_vis(VariantElement el,filterElem* f, Pred pred);
 
-
-
-    class BASE_FILTER
-    {
-    public:
-        virtual void set_filter(std::shared_ptr<DB> el) = 0;
-        virtual ~BASE_FILTER() = default;
-    };
-
-    class FILTER_VALUE : public BASE_FILTER
-    {
-    public:        
-        Value value;
-
-        FILTER_VALUE(Value in) ;
-        
-        void set_filter(std::shared_ptr<DB> el) override ;
-    };
-        
-    class FILTER_NAME : public BASE_FILTER
-    {
-    public:
-        std::string name;
-        
-        FILTER_NAME(std::string name_in);
-
-        void set_filter(std::shared_ptr<DB> el) override ;
-    };
-
-    class FILTER_VALUE_NAME: public BASE_FILTER
+    class FilterDB 
     {
         public:
-        Value value;
-        std::string name;
-        FILTER_VALUE_NAME(Value val_in, std::string n_in) ;
-        void set_filter(std::shared_ptr<DB> el) override ;
+        FilterDB()=default;
+        ~FilterDB()=default;
+        FilterDB(std::shared_ptr<DB> el);
+
+        void resetAll();
+        void find_el(filterElem* _f);
+        
+        private:
+        std::shared_ptr<DB> db_ptr;
     };
-         
-    class RESET_FILTER: public BASE_FILTER
-    {
-        public:
-        RESET_FILTER()=default;
-        void set_filter(std::shared_ptr<DB> el) override;
-    };
-   
-    void reset_vis(VariantElement el);
-    
-    std::shared_ptr<BASE_FILTER> Do_Filter(filterElem* el);
+
 };
 
 

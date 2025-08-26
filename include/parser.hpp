@@ -133,10 +133,10 @@ struct version : pt::seq<TAO_PEGTL_STRING("VERSION"),separator,pt::plus<pt::digi
 struct version_noeol : pt::seq<TAO_PEGTL_STRING("VERSION"),separator,pt::plus<pt::digit>,pt::one<'.'>,pt::plus<pt::digit>>{};
 
 /// \brief Extended alphanumeric token (includes `_ - . /`).
-struct alphanum : pt::plus<pt::sor<pt::alnum,pt::one<'_'>,pt::one<'-'>,pt::one<'.'>,pt::one<'/'>>> {}; 
+struct alphanum : pt::plus<pt::sor<pt::alnum,pt::one<'_'>,pt::one<'-'>,pt::one<'.'>,pt::one<'/'>,pt::one<'&'>>> {}; 
 
 /// \brief Like \ref alphanum but allows spaces (for quoted names).
-struct alphanum_space : pt::plus<pt::sor<pt::alnum,pt::one<'_'>,space,pt::one<'-'>,pt::one<'.'>,pt::one<'/'>>> {}; 
+struct alphanum_space : pt::plus<pt::sor<pt::alnum,pt::one<'_'>,space,pt::one<'-'>,pt::one<'.'>,pt::one<'/'>,pt::one<'&'>>> {}; 
 
 /// \brief Like \ref alphanum but without spaces (for unquoted names).
 struct alphanum_no_space : pt::plus<pt::sor<pt::alnum,pt::one<'_'>,pt::one<'-'>,pt::one<'.'>,pt::one<'/'>>> {}; 

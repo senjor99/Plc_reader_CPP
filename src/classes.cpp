@@ -9,11 +9,16 @@ std::string to_lowercase(std::string s)
     [](unsigned char c) { return std::tolower(c); });
     return s;
 };
-
+std::string_view to_lowercase_view(std::string s)
+{
+    std::transform(s.begin(), s.end(), s.begin(),
+    [](unsigned char c) { return std::tolower(c); });
+    return s;
+};
 /// \brief TIA type size lookup table: {byteCount, bitCount}.
 /// \details Maps TIA basic types to byte/bit sizes used for offset calculations.
 /// Example: {"bool",{0,1}}, {"int",{2,0}}, {"real",{4,0}}, {"string",{256,0}}.
-std::unordered_map<std::string,std::pair<int,int>> tia_type_size {
+const std::unordered_map<std::string,std::pair<int,int>> tia_type_size {
     {"bool",   {  0, 1}},  
     {"byte",   {  1, 0}}, 
     {"char",   {  1, 0}},
@@ -29,7 +34,8 @@ std::unordered_map<std::string,std::pair<int,int>> tia_type_size {
     {"time",   {  4, 0}},
     {"udint",  {  4, 0}},
     {"uint",  {  2, 0}},
-    {"usint",  {  1, 0}}
+    {"usint",  {  1, 0}},
+    {"date_and_time",  {  8, 0}}
 };
 
 /// \brief Recursively sets visibility based on a predicate over BASE nodes.
@@ -38,14 +44,14 @@ std::unordered_map<std::string,std::pair<int,int>> tia_type_size {
 /// \param pred Predicate evaluated on leaves; containers are visible if any child matches.
 /// \return true if the element (or any of its descendants) matches.
 template <class Pred>
-bool Filter::walk_set_vis(VariantElement el, Pred pred) {
+bool Filter::walk_set_vis(VariantElement el, filterElem* f, Pred pred) {
     return std::visit([&](auto& ptr) -> bool {
         using T = std::decay_t<decltype(ptr)>;
         using E = typename T::element_type;
 
         if constexpr (std::is_base_of_v<BASE, E>) 
         {
-            bool match = pred(*ptr);
+            bool match = pred(*ptr,f);
             ptr->set_vis(match);
             
             return match;
@@ -53,11 +59,9 @@ bool Filter::walk_set_vis(VariantElement el, Pred pred) {
         else if constexpr (std::is_base_of_v<BASE_CONTAINER, E>) 
         {
             bool any = false;
-
             for (auto& ch : ptr->get_childs())
-                any |= walk_set_vis(ch, pred);
+                any |= walk_set_vis(ch,f, pred);
             ptr->set_vis(any);
-
             return any;
         } 
         else
@@ -67,104 +71,64 @@ bool Filter::walk_set_vis(VariantElement el, Pred pred) {
     }, el);
 }
 
-/// \brief Resets visibility to true for the whole subtree.
-/// \param el Variant element root.
-void Filter::reset_vis(VariantElement el)
-{
-    std::visit([&](auto& ptr) {
-        using T = std::decay_t<decltype(ptr)>;
-        using E = typename T::element_type;
 
-        if constexpr(std::is_base_of_v<BASE,E>){
-            ptr->set_vis(true);
-        }
-        else if constexpr(std::is_base_of_v<BASE_CONTAINER,E>){
-            ptr->set_vis(true);
-            for (auto& ch : ptr->get_childs())
-                reset_vis(ch);
-        }
-        },el);
-};
-
-/// \brief Filter that clears any applied filtering (shows all).
-/// \param el DB root to reset.
-void Filter::RESET_FILTER::set_filter(std::shared_ptr<DB> el) 
-{
-    for (auto& ch : el->get_childs())
-        Filter::reset_vis(ch);
-};
-
-/// \brief Constructs a value-based filter.
-/// \param in Value to match on \c BASE::get_data().
-Filter::FILTER_VALUE::FILTER_VALUE(Value in) : value(in) {}
-    
-/// \brief Applies a value-based filter on all leaves.
-/// \details Matches nodes where \c get_data()==value or empty Value (passes through).
-void Filter::FILTER_VALUE::set_filter(std::shared_ptr<DB> el) 
-{
-    for (auto& ch : el->get_childs())
-        walk_set_vis(ch, [&](BASE& b)
-        {
-            if(b.get_data() == Value("")) return true;
-            else return b.get_data() == value;
-        });
-}
-    
-/// \brief Constructs a name-based filter.
-/// \param name_in Exact name to match on \c BASE::get_name().
-Filter::FILTER_NAME::FILTER_NAME(std::string name_in) : name(name_in) {}
-
-/// \brief Applies a name-based filter on all leaves.
-/// \details Matches nodes where \c get_name()==name or empty Value (passes through).
-void Filter::FILTER_NAME::set_filter(std::shared_ptr<DB> el)  
-{
-    for (auto& ch : el->get_childs())
-        walk_set_vis(ch, [&](BASE& b){ 
-            if(b.get_data() == Value("")) return true;
-            else return b.get_name() == name; 
-        });
+static inline bool contains(std::string_view haystack, std::string_view needle) {
+    return !needle.empty() && haystack.find(needle) != std::string_view::npos;
 }
 
-/// \brief Constructs a combined value+name filter.
-/// \param val_in Value to match.
-/// \param n_in Name to match.
-Filter::FILTER_VALUE_NAME::FILTER_VALUE_NAME(Value val_in, std::string n_in) 
-    : value(val_in),name(n_in) {}
+static inline bool variant_matches(const Value& lhs,
+                                   const Value& rhs)
+{
+    return std::visit(overloaded{
+        [](const std::string& a, const std::string& b) 
+        { return contains(to_lowercase_view(a),to_lowercase_view(b)); },
+
+        [](bool a, bool b) { return a  &&  b; },
+
+        [](int a, int b)   { return a == b; },
+
+        [](auto const&, auto const&) {return false; }
+    }, lhs, rhs);
+}
+
+Filter::FilterDB::FilterDB(std::shared_ptr<DB> el) 
+    : db_ptr(el) {}
 
 /// \brief Applies a combined value+name filter on all leaves.
 /// \details Passes through empty name+value nodes; otherwise requires both matches.
-void Filter::FILTER_VALUE_NAME::set_filter(std::shared_ptr<DB> el) 
+void Filter::FilterDB::find_el(Filter::filterElem* _f) 
 {
-    for (auto& ch : el->get_childs())
-        walk_set_vis(ch, [&](BASE& b){
-            if(b.get_name() == "" && b.get_data() == Value("")) return true;
-            return b.get_name() == name && b.get_data() == value;
-        });
-}
-    
-/// \brief Factory that selects the appropriate filter implementation.
-/// \param el Descriptor with optional name and value.
-/// \return A concrete \c BASE_FILTER (value, name, value+name, or reset).
-/// \throws std::logic_error on invalid combination.
-std::shared_ptr<Filter::BASE_FILTER> Filter::Do_Filter(filterElem* el)
-{
-    if(el->value_in.has_value() && !el->name.has_value()){
-        return std::make_shared<FILTER_VALUE>(el->value_in.value());
-    }
-    else if(!el->value_in.has_value() && el->name.has_value() ){
-        return std::make_shared<FILTER_NAME>(el->name.value());
-    }
-    else if(el->value_in.has_value() && el->name.has_value() ){
-        return std::make_shared<FILTER_VALUE_NAME>(el->value_in.value(),el->name.value());
-    }
-    else if(!el->value_in.has_value() && !el->name.has_value()){
-        return std::make_shared<RESET_FILTER>();
-    }
-    else{
-        throw std::logic_error("Invalid combination of arguments in Do_Filter");
-    }
-};
+    for (auto& ch : db_ptr->get_childs())
 
+        walk_set_vis(ch,_f, [&](BASE& b,filterElem* f){
+            if (f->name.has_value() && !contains(to_lowercase_view(b.get_name()),to_lowercase_view(*f->name)))
+                return false;
+
+            if (f->comment.has_value() && !contains(to_lowercase_view(b.get_comment()), to_lowercase_view(*f->comment)))
+                return false;
+                            
+            if (f->value_in.has_value())
+            {
+                const auto& bval = b.get_data();
+                const auto& fval = *f->value_in;
+                if (!variant_matches(bval, fval))
+                    return false;
+            }
+            return true;
+        }); 
+}
+ 
+void Filter::FilterDB::resetAll() 
+{
+    Filter::filterElem* nullFilter;
+    for (auto& ch : db_ptr->get_childs())
+        walk_set_vis(ch,nullFilter, [&](BASE& b,filterElem* f)
+        {
+            return true;
+        }); 
+}
+
+void Filter::filterElem::reset() { };
 /// \brief Clones/constructs a new element of the same semantic kind under a new parent.
 /// \param el Variant element to copy.
 /// \param par New parent container.
@@ -198,14 +162,14 @@ VariantElement class_utils::create_element(const VariantElement& el,std::shared_
             return STRUCT_SINGLE::create_from_element(ptr->get_name(),ptr->get_type(),ptr->get_childs(),par);
         }   
         else if constexpr (std::is_same_v<T, std::shared_ptr<STRUCT_ARRAY>>){
-            //throw std::logic_error("Unhandled type in create_element");
+            throw std::logic_error("Unhandled type in create_element STRUCT_ARRAY");
             return STRUCT_ARRAY::create_from_element(ptr->get_name(),ptr->get_type(),ptr->get_childs(),par,ptr->get_start(),ptr->get_end());
         } 
         else if constexpr (std::is_same_v<T, std::shared_ptr<STRUCT_ARRAY_EL>>){
-            //throw std::logic_error("Unhandled type in create_element");
+            throw std::logic_error("Unhandled type in create_element STRUCT_ARRAY_EL");
             return STRUCT_ARRAY_EL::create_from_element(ptr->get_name(),ptr->get_index(),ptr->get_max_index(),ptr->get_childs(),par);
         }     
-        throw std::logic_error("Unhandled type in create_element");
+        throw std::logic_error("Unhandled type in create_element --");
         return{};
     
     }, el);
@@ -256,6 +220,7 @@ std::pair<int,int> class_utils::get_size(std::string type){
     auto it = tia_type_size.find(to_lowercase(type));
     
     if(it == tia_type_size.end()){ 
+        std::cerr<<type<<"\n";
         throw std::logic_error("Invalid element type");
     }
     return it->second;
@@ -351,7 +316,9 @@ Value translate::parse_type(std::string& input)
     }
     std::string input_low = to_lowercase(input); 
     if( input_low == "true" || input_low == "false")
-        output = parse_bool(input_low);
+        return parse_bool(input_low);
+    
+       // std::cout << typeid().name() << "\n";
     return input;
 }
 
@@ -372,6 +339,9 @@ std::string BASE::get_name()const{return name;}
 
 /// \brief Gets element type.
 std::string BASE::get_type()const{return type;}
+
+/// \brief Gets element comment.
+std::string BASE::get_comment()const{return comment;}
 
 /// \brief Gets byte/bit offset of the element.
 std::pair<int,int> BASE::get_offset() const { return offset;}
@@ -560,7 +530,7 @@ std::shared_ptr<STD_ARRAY> STD_ARRAY::create_array
         
         auto it = tia_type_size.find(to_lowercase(t_in));
         if(it == tia_type_size.end()){ 
-            std::cout <<"element name "<< to_lowercase(t_in)<< "\n";
+            std::cerr <<"element name "<< to_lowercase(t_in)<< "\n";
             throw std::logic_error("Invalid element type");
         }
       
@@ -817,5 +787,6 @@ void DB::_set_offset(){set_child_offset(offset_max);}
 
 /// \brief Propagates buffer decoding to the entire DB.
 void DB::_set_data(const std::vector<unsigned char>& buffer){set_data_to_child(buffer);}
+
 
 
